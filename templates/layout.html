@@ -4,12 +4,24 @@
         Awesome Blog
     </title>
     <body>
+        
         <link rel='stylesheet' type='text/css' href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
         {%include 'includes/_navbar.html'%}
+        <div class='container'>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  <ul class=flashes>
+                  {% for category, message in messages %}
+                    <li class="alert alert-{{ category }}">{{ message }}</li>
+                  {% endfor %}
+                  </ul>
+                {% endif %}
+              {% endwith %}
 
+              
         {%block body%}
         {%endblock%}
-
+        </div>
         <script type='text/javascript' href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
     </body>
 </html>
