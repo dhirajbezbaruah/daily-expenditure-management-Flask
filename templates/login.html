@@ -3,16 +3,9 @@
 {%block body%}
 
 <h1 class='text-center'>Login </h1>
-{% macro render_field(field) %}
-    {{field.label}}
-    {{field(**kwargs)| safe }}
-    {%if field.errors %}
-        {%for error in field.errors%}
-            <span class='help-inline'>{{error}}</span>
-        {%endfor%}
-{%endif %}
+{% from "includes/_formhelper.html" import render_field%}
 
-{%endmacro%}
+
 
 <form method="POST" action=''>
     
@@ -24,5 +17,6 @@
     </div>
     
     <p><input type='submit' class='btn btn-primary' value='Login'></p>
+    <span id="passwordHelpBlock" classs="help-block"><a href="{{url_for('.forget_password')}}">Forgot password?</a></span>
 </form>
 {%endblock%}

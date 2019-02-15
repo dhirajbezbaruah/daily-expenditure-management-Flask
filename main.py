@@ -4,8 +4,11 @@ from flask_mysqldb import MySQL
 from passlib.hash import sha256_crypt
 from functools import wraps
 from flask_mail import Mail, Message
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired
-import datetime
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, TimedJSONWebSignatureSerializer
+import time
+from wtforms.fields.html5 import DateField
+from flask_moment import Moment
+
 
 app=Flask(__name__)
 #mysql config
@@ -16,20 +19,30 @@ app.config['MYSQL_DB'] ='myflaskapp'
 app.config['MYSQL_CURSORCLASS'] ='DictCursor'
 
 mysql=MySQL(app)
+moment = Moment(app)
 
 
 #mail server config
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'xx'
-app.config['MAIL_PASSWORD'] = 'xx'
+app.config['MAIL_USERNAME'] = 'dbezbaruah412@gmail.com'
+app.config['MAIL_PASSWORD'] = 'adtu2k15'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
 
 s= URLSafeTimedSerializer('secret123')
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            flash('You Must Login First!', 'danger')
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
 
+#Home
 @app.route("/")
 def index():
     return render_template('index.html')
@@ -79,7 +92,7 @@ def register():
         
             mysql.connection.commit()
             token= s.dumps(email, salt='email-confirm')
-            msg=Message('Confirm Email', sender='dhirajbaruah412@gmail.com', recipients=[email])
+            msg=Message('Confirm Email', sender='dbezbaruah412@gmail.com', recipients=[email])
             link=url_for('confirm_email', token=token, _external=True)
             msg.body='your link is {}'.format(link)
             mail.send(msg)
@@ -96,6 +109,7 @@ def register():
     return render_template('register.html', form=form)
     
 @app.route('/confirm_email/<token>')
+
 def confirm_email(token):
     try:
         email=s.loads(token, salt='email-confirm', max_age=3600)
@@ -115,7 +129,7 @@ def confirm_email(token):
     return 'thank you'
 
 class LoginForm(Form):
-    usernamelogin=StringField('Username', [validators.Length(min=1, max=50)])
+    usernamelogin=StringField('Username/Email', [validators.Length(min=1, max=50)])
     passwordlogin=PasswordField('Password', [validators.DataRequired(), validators.Length(min=3, max=100)])
 
 
@@ -133,22 +147,35 @@ def login():
             data = cur.fetchone()
             password= data['password']
 
-            if sha256_crypt.verify(passwordlogin, password):
+            if sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='1' and password=%s", [password])):
                 session['logged_in']= True
                 session['username']= usernamelogin
                 flash('you are now logged in', 'success')
-                return redirect(url_for('register'))
+                return redirect(url_for('index'))
+            elif sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='0'  and password=%s", [password])):
+                session['logged_in']= False
+                session.clear()
+                return redirect(url_for('unconfirmed'))
+
+            else:
+                flash("Password didnot match", 'danger')
+                return redirect(url_for('login'))
+            return redirect(url_for('login'))
         elif (cur.execute("SELECT * FROM users where email=%s", [usernamelogin]))>0:
         
             data = cur.fetchone()
             password= data['password']
 
-            if sha256_crypt.verify(passwordlogin, password):
+            if sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='1' and password=%s", [password])):
                 session['logged_in']= True
                 session['username']= usernamelogin
                 flash('you are now logged in', 'success')
-                return redirect(url_for('register'))
-        
+                return redirect(url_for('index'))
+            elif sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='0'  and password=%s", [password])):
+                #flash("confirm email first")
+                session['logged_in']= False
+                session.clear()
+                return redirect(url_for('unconfirmed'))
 
             else:
                 flash("Password didnot match", 'danger')
@@ -167,6 +194,89 @@ def login():
 
 
     #return render_template('login.html', formlogin=formlogin)
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash('You are now logged out', 'success')
+    return redirect(url_for('login'))
+
+@app.route('/unconfirmed')
+def unconfirmed():
+    return 'Unconfirmed'
+
+class forget_form(Form):
+    email=StringField("Email", [validators.DataRequired(), validators.Length(min=4, max=30)])
+
+@app.route("/forget_password", methods=['GET', 'POST'])
+def forget_password():
+    formforget=forget_form(request.form)
+    if request.method=='POST' and formforget.validate():
+        emailforget=formforget.email.data
+        cur= mysql.connection.cursor()
+        
+        cur.execute("SELECT * FROM users WHERE email = %s", [emailforget])
+        if cur.fetchone() is not None:
+            tokenforget= s.dumps(emailforget, salt='forget_pass')
+            msg1=Message('Confirm Email', sender='dbezbaruah412@gmail.com', recipients=[emailforget])
+            link1=url_for('reset_password', tokenforget=tokenforget, _external=True)
+            msg1.body='your link is {}'.format(link1)
+            mail.send(msg1)
+        return "sent"
+
+    return render_template('forget_password.html', formforget=formforget)
+
+
+class resetform(Form):
+    password=PasswordField('New password', [validators.DataRequired(), validators.Length(min=4, max=44)])
+
+
+@app.route("/reset_password/<tokenforget>", methods=['GET', 'POST'])
+def reset_password(tokenforget):
+    formreset=resetform(request.form)
+    if request.method=='POST' and formreset.validate():
+        password= sha256_crypt.encrypt(str(formreset.password.data))
+        try:
+            email=s.loads(tokenforget, salt='forget_pass', max_age=10)
+            cur=mysql.connection.cursor()
+            cur.execute("SELECT * FROM users WHERE email=%s", [email])
+            if cur.fetchone() is not None:
+                cur.execute("UPDATE users SET password=%s where email=%s", [password, email])
+                mysql.connection.commit()
+                flash('password updated', 'success')
+            return redirect(url_for('login'))
+        
+        except SignatureExpired:
+            return 'Token Expired'
+
+
+    #password= formreset.newpassword.data
+    
+    return render_template('reset_password.html', formreset=formreset)
+
+#Dashboard
+class DateForm(Form):
+    dt = DateField('date', format='%Y-%m-%d')
+
+@app.route('/dashboard', methods=['POST','GET'])
+@login_required
+def dashboard():
+    formdate=DateForm(request.form)
+    if request.method=='POST':
+        dt=formdate.dt.data
+        then = time.strftime('%Y-%m-%d %H-%M-%S')
+        then=str(then)
+
+        cur=mysql.connection.cursor()
+        cur.execute("INSERT INTO temp (date) VALUES('%s')", format(dt))
+        mysql.connection.commit()
+        #cur.close()
+
+    return render_template('dashboard.html', formdate=formdate)
+
+
+
+
     
 if __name__ == "__main__":
     app.secret_key='secret123'

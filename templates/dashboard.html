@@ -1,0 +1,26 @@
+{%extends 'layout.html'%}
+<div class='container'>
+
+{%block body%}
+
+
+{% from "includes/_formhelper.html" import render_field%}
+<style>
+#date {display:inline-block;margin-right:10px; width:200px; } 
+#location {display:inline-block; width:200px;} 
+</style>
+
+<form method="POST" action=''>
+    
+    
+        Choose Date:
+        <input id=date class="form-control" type="date" name="date">
+        City:
+        <input id=location class="form-control" type="location" name="location">
+        
+    
+</form>
+
+
+{%endblock%}
+</div>
