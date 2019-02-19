@@ -1,13 +1,11 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, session, logging, flash
-from wtforms import StringField, PasswordField, validators, Form
+from wtforms import StringField, PasswordField, validators, Form, DateField
 from flask_mysqldb import MySQL
 from passlib.hash import sha256_crypt
 from functools import wraps
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, TimedJSONWebSignatureSerializer
-import time
-from wtforms.fields.html5 import DateField
-from flask_moment import Moment
+
 
 
 app=Flask(__name__)
@@ -19,7 +17,7 @@ app.config['MYSQL_DB'] ='myflaskapp'
 app.config['MYSQL_CURSORCLASS'] ='DictCursor'
 
 mysql=MySQL(app)
-moment = Moment(app)
+
 
 
 #mail server config
@@ -150,6 +148,7 @@ def login():
             if sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='1' and password=%s", [password])):
                 session['logged_in']= True
                 session['username']= usernamelogin
+                
                 flash('you are now logged in', 'success')
                 return redirect(url_for('index'))
             elif sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='0'  and password=%s", [password])):
@@ -237,7 +236,7 @@ def reset_password(tokenforget):
     if request.method=='POST' and formreset.validate():
         password= sha256_crypt.encrypt(str(formreset.password.data))
         try:
-            email=s.loads(tokenforget, salt='forget_pass', max_age=10)
+            email=s.loads(tokenforget, salt='forget_pass', max_age=3600)
             cur=mysql.connection.cursor()
             cur.execute("SELECT * FROM users WHERE email=%s", [email])
             if cur.fetchone() is not None:
@@ -276,7 +275,12 @@ def dashboard():
 
 
 
+#User Profile
 
+@app.route('/profile')
+@login_required
+def profile():
+    return render_template('userprofile.html')
     
 if __name__ == "__main__":
     app.secret_key='secret123'
