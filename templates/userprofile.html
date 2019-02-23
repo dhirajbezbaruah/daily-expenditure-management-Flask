@@ -23,7 +23,29 @@
   }
   </style>
 
-  <img src="{{url_for('static', filename='img_avatar.png')}}" alt="Avatar" class="avatar">
-  <div class="user"><h4>{{ session['username'] }}</h4></div>
-  {{session['email']}}
+
+
+
+
+
+
+
+
+
+
+
+
+    <img src="{{profile_image}}" alt="Avatar" class="avatar">
+    <div class="user"><h4>{{ session['username'] }}</h4></div>
+
+    {% from "includes/_formhelper.html" import render_field%}
+    <form method="POST" action='' enctype="multipart/form-data">
+        
+        <div class='form-group'>
+            {{render_field(picprofile.picture, class_='form-control')}}
+        </div>
+        <p><input type='submit' class='btn btn-primary' value='Submit'></p>
+    </form>
+
+    
 {%endblock%}

@@ -2,11 +2,26 @@
 
 
 {% block body %}
-<h1 class='text-center'>Register </h1>
+
+
+<style>
+    #form-wrapper {     
+        width: 400px;           
+        height: 200px;          
+        position: absolute;
+        top: 28%;
+        left: 47%;
+        margin-top: -100px;     
+        margin-left: -150px;     
+    }
+        
+</style>
 
 
 {% from "includes/_formhelper.html" import render_field%}
-<form method="POST" action=''>
+<form id='form-wrapper' method="POST" action=''>
+    <h1 class='text-center'>Create an account </h1>
+    
     <div class='form-group'>
         {{render_field(form.name, class_='form-control')}}
     </div>
@@ -22,7 +37,8 @@
     <div class='form-group'>
         {{render_field(form.confirm, class_='form-control')}}
     </div>
-    <p><input type='submit' class='btn btn-primary' value='Submit'></p>
+    <p><input type='submit' class='btn btn-primary' value='Register'></p>
+    <span id="passwordHelpBlock" classs="help-block"><a href="{{url_for('.login')}}">Already have an account? Login here</a></span>
 </form>
 
 {% endblock %}

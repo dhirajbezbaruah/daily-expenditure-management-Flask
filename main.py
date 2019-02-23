@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, session, logging, flash
-from wtforms import StringField, PasswordField, validators, Form, DateField
+from wtforms import StringField, PasswordField, validators, Form, DateField, FileField
 from flask_mysqldb import MySQL
 from passlib.hash import sha256_crypt
 from functools import wraps
 from flask_mail import Mail, Message
+#import secrets
+import os
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, TimedJSONWebSignatureSerializer
 
 
@@ -92,7 +94,7 @@ def register():
             token= s.dumps(email, salt='email-confirm')
             msg=Message('Confirm Email', sender='dbezbaruah412@gmail.com', recipients=[email])
             link=url_for('confirm_email', token=token, _external=True)
-            msg.body='your link is {}'.format(link)
+            msg.body='Thanks For siging up. Please click on the link to activate your account. The link will be expired in 1 hour. {}'.format(link)
             mail.send(msg)
         
             flash('Please confirm your email', 'success')
@@ -112,11 +114,11 @@ def confirm_email(token):
     try:
         email=s.loads(token, salt='email-confirm', max_age=3600)
     except SignatureExpired:
-        return 'Token Expired'
+        return 'Your Link is Expired'
     cur=mysql.connection.cursor()
     result=cur.execute("SELECT * FROM users where confirm_email= %s", [confirm_email])
     
-    cur.close()
+    #cur.close()
     if result>0:
         return 'confirmed'
     else:
@@ -124,7 +126,8 @@ def confirm_email(token):
         cur.execute("UPDATE users SET confirm_email='1' where email=%s", [email])
         mysql.connection.commit()
         cur.close()
-    return 'thank you'
+        flash('Email confirmed! You can now login.', 'success')
+    return redirect(url_for('login'))
 
 class LoginForm(Form):
     usernamelogin=StringField('Username/Email', [validators.Length(min=1, max=50)])
@@ -202,7 +205,7 @@ def logout():
 
 @app.route('/unconfirmed')
 def unconfirmed():
-    return 'Unconfirmed'
+    return render_template('unconfirmed.html')
 
 class forget_form(Form):
     email=StringField("Email", [validators.DataRequired(), validators.Length(min=4, max=30)])
@@ -276,11 +279,29 @@ def dashboard():
 
 
 #User Profile
+class profilepic(Form):
+    picture=FileField('Update Profile Pic')
 
-@app.route('/profile')
+def save_pic(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, 'static/profile_pic', picture_fn)
+    form_picture.save(picture_path)
+    return picture_fn
+
+
+@app.route('/profile', methods=['POST','GET'])
 @login_required
 def profile():
-    return render_template('userprofile.html')
+    picprofile=profilepic(request.form)
+    if request.method=='POST' and picprofile.validate():
+        if picprofile.picture.data:
+            picture_file = save_pic(picprofile.picture.data)
+
+    #cur=mysql.connection.cursor()
+    #profile_image = url_for('static', filename='profile_pic/'+ str(cur.execute("SELECT dp FROM users WHERE email=%s", [session['username']])))
+    return render_template('userprofile.html', picprofile=picprofile)
     
 if __name__ == "__main__":
     app.secret_key='secret123'
