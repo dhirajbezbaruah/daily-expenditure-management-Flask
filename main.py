@@ -9,7 +9,6 @@ import os
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, TimedJSONWebSignatureSerializer
 
 
-
 app=Flask(__name__)
 #mysql config
 app.config['MYSQL_HOST'] ='localhost'
@@ -129,6 +128,8 @@ def confirm_email(token):
         flash('Email confirmed! You can now login.', 'success')
     return redirect(url_for('login'))
 
+####LOGINNNN
+
 class LoginForm(Form):
     usernamelogin=StringField('Username/Email', [validators.Length(min=1, max=50)])
     passwordlogin=PasswordField('Password', [validators.DataRequired(), validators.Length(min=3, max=100)])
@@ -139,6 +140,7 @@ def login():
     formlogin=LoginForm(request.form)
     if request.method=='POST' and formlogin.validate():
         usernamelogin=formlogin.usernamelogin.data
+        emaillogin=formlogin.usernamelogin.data
         passwordlogin=formlogin.passwordlogin.data
 
         cur=mysql.connection.cursor()
@@ -151,6 +153,10 @@ def login():
             if sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='1' and password=%s", [password])):
                 session['logged_in']= True
                 session['username']= usernamelogin
+                cur.execute("SELECT email FROM users where username= %s",[session['username']] )
+                res=cur.fetchone()
+                email=res['email']
+                session['email']= email
                 
                 flash('you are now logged in', 'success')
                 return redirect(url_for('index'))
@@ -163,14 +169,24 @@ def login():
                 flash("Password didnot match", 'danger')
                 return redirect(url_for('login'))
             return redirect(url_for('login'))
-        elif (cur.execute("SELECT * FROM users where email=%s", [usernamelogin]))>0:
+        elif (cur.execute("SELECT * FROM users where email=%s", [emaillogin]))>0:
         
             data = cur.fetchone()
             password= data['password']
 
             if sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='1' and password=%s", [password])):
                 session['logged_in']= True
-                session['username']= usernamelogin
+                #session['username']= usernamelogin
+                session['email'] = emaillogin
+
+                cur.execute("SELECT username FROM users where email= %s",[session['email']] )
+                res=cur.fetchone()
+                username=res['username']
+                session['username']= username
+
+                
+
+
                 flash('you are now logged in', 'success')
                 return redirect(url_for('index'))
             elif sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='0'  and password=%s", [password])):
@@ -208,7 +224,7 @@ def unconfirmed():
     return render_template('unconfirmed.html')
 
 class forget_form(Form):
-    email=StringField("Email", [validators.DataRequired(), validators.Length(min=4, max=30)])
+    email=StringField('',[validators.DataRequired(), validators.Length(min=4, max=30)])
 
 @app.route("/forget_password", methods=['GET', 'POST'])
 def forget_password():
@@ -220,11 +236,12 @@ def forget_password():
         cur.execute("SELECT * FROM users WHERE email = %s", [emailforget])
         if cur.fetchone() is not None:
             tokenforget= s.dumps(emailforget, salt='forget_pass')
-            msg1=Message('Confirm Email', sender='dbezbaruah412@gmail.com', recipients=[emailforget])
+            msg1=Message('Reset Password', sender='dbezbaruah412@gmail.com', recipients=[emailforget])
             link1=url_for('reset_password', tokenforget=tokenforget, _external=True)
-            msg1.body='your link is {}'.format(link1)
+            msg1.body='Please click in the link below to reset your password {}'.format(link1)
             mail.send(msg1)
-        return "sent"
+        flash('Password reset link has been sent to your registered email', 'success')
+        return redirect(url_for('forget_password'))
 
     return render_template('forget_password.html', formforget=formforget)
 
@@ -279,8 +296,12 @@ def dashboard():
 
 
 #User Profile
-class profilepic(Form):
-    picture=FileField('Update Profile Pic')
+class userprofile(Form):
+    name=StringField('Name', [validators.DataRequired(), validators.Length(min=1, max=50)])
+    username= StringField('username', [validators.DataRequired(), validators.Length(min=4, max=50)])
+    email=StringField('Email', [validators.DataRequired(), validators.Length(min=6, max=100)])
+
+
 
 def save_pic(form_picture):
     random_hex = secrets.token_hex(8)
@@ -294,14 +315,32 @@ def save_pic(form_picture):
 @app.route('/profile', methods=['POST','GET'])
 @login_required
 def profile():
-    picprofile=profilepic(request.form)
-    if request.method=='POST' and picprofile.validate():
-        if picprofile.picture.data:
-            picture_file = save_pic(picprofile.picture.data)
+    cur=mysql.connection.cursor()
+
+     
+
+    cur.execute("SELECT name FROM users where email= %s",[session['email']] )
+    res=cur.fetchone()
+    name=res['name']
+    #if session['username']==
+
+
+    #cur.execute("SELECT username FROM users where email= %s",[session['username']] )
+    #res2=cur.fetchone()
+    #username=res2['username']
+    #mysql.connection.commit()
+
+    uprofile=userprofile(request.form)
+    if request.method=='GET':
+        uprofile.email.data = session['email']
+        uprofile.username.data = session['username']
+        uprofile.name.data = name
+
+        
 
     #cur=mysql.connection.cursor()
     #profile_image = url_for('static', filename='profile_pic/'+ str(cur.execute("SELECT dp FROM users WHERE email=%s", [session['username']])))
-    return render_template('userprofile.html', picprofile=picprofile)
+    return render_template('userprofile.html', uprofile=uprofile)
     
 if __name__ == "__main__":
     app.secret_key='secret123'
