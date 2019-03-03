@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, session, logging, flash
-from wtforms import StringField, PasswordField, validators, Form, DateField, FileField
+from wtforms import StringField, PasswordField, validators, Form, DateField, FileField, ValidationError
 from flask_mysqldb import MySQL
 from passlib.hash import sha256_crypt
 from functools import wraps
@@ -7,7 +7,8 @@ from flask_mail import Mail, Message
 #import secrets
 import os
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, TimedJSONWebSignatureSerializer
-
+import safe
+import re
 
 app=Flask(__name__)
 #mysql config
@@ -46,14 +47,31 @@ def login_required(f):
 def index():
     return render_template('index.html')
 
+def validates(RegisterForm, password):
+    p=password.data
+    #spec= "!@#$%&_="
+    if not any(i.isdigit() for i in p):
+        raise ValidationError('Password must contain numbers and letters')
+    elif len(p)<6:
+        raise ValidationError('Minimum length of password should be 6')
+
+def valid(RegisterForm, password):
+    sp_cha=('!', '@', '#', '$', '%')
+    for i in password.data:
+        if i not in sp_cha:
+            
+            raise ValidationError('sp')
+
+
 class RegisterForm(Form):
+    
     name=StringField('Name', [validators.DataRequired(), validators.Length(min=1, max=50)])
     username= StringField('username', [validators.DataRequired(), validators.Length(min=4, max=50)])
     email=StringField('Email', [validators.DataRequired(), validators.Length(min=6, max=100)])
     password= PasswordField('Password', [
         validators.DataRequired(),
-        validators.EqualTo('confirm', message='Passwords do not match')
-
+        validators.EqualTo('confirm', message='Passwords do not match!'),
+        validates
     ])
     confirm=PasswordField('Confirm password', [validators.DataRequired()])
 
@@ -283,11 +301,12 @@ def dashboard():
     formdate=DateForm(request.form)
     if request.method=='POST':
         dt=formdate.dt.data
-        then = time.strftime('%Y-%m-%d %H-%M-%S')
-        then=str(then)
+        #then = dt.strftime('%Y-%m-%d %H-%M-%S')
+        #then=str(dt)
+        #formatted_date = dt.strftime('%Y-%m-%d')
 
         cur=mysql.connection.cursor()
-        cur.execute("INSERT INTO temp (date) VALUES('%s')", format(dt))
+        cur.execute("INSERT INTO record (date) VALUES('%s')", (dt))
         mysql.connection.commit()
         #cur.close()
 
