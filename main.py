@@ -1,14 +1,17 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, session, logging, flash
-from wtforms import StringField, PasswordField, validators, Form, DateField, FileField, ValidationError
+from wtforms import StringField, PasswordField, validators, Form, DateField, ValidationError
 from flask_mysqldb import MySQL
 from passlib.hash import sha256_crypt
 from functools import wraps
 from flask_mail import Mail, Message
-#import secrets
+from flask_wtf.file import FileAllowed, FileField
+import secrets
 import os
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, TimedJSONWebSignatureSerializer
-import safe
-import re
+#import safe
+from werkzeug.utils import secure_filename
+from PIL import Image
+
 
 app=Flask(__name__)
 #mysql config
@@ -320,16 +323,20 @@ class userprofile(Form):
     username= StringField('username', [validators.DataRequired(), validators.Length(min=4, max=50)])
     email=StringField('Email', [validators.DataRequired(), validators.Length(min=6, max=100)])
 
+class profile_pic(Form):
+    picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
+    #submit = SubmitField('Update')
 
 
-def save_pic(form_picture):
-    random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
-    picture_path = os.path.join(app.root_path, 'static/profile_pic', picture_fn)
-    form_picture.save(picture_path)
-    return picture_fn
 
+UPLOAD_FOLDER = 'static\\profile_pic'
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/profile', methods=['POST','GET'])
 @login_required
@@ -341,26 +348,115 @@ def profile():
     cur.execute("SELECT name FROM users where email= %s",[session['email']] )
     res=cur.fetchone()
     name=res['name']
-    #if session['username']==
-
-
-    #cur.execute("SELECT username FROM users where email= %s",[session['username']] )
-    #res2=cur.fetchone()
-    #username=res2['username']
-    #mysql.connection.commit()
+    
 
     uprofile=userprofile(request.form)
+    dpform=profile_pic(request.form)
+    if request.method == 'POST':
+        uprofile.email.data = session['email']
+        uprofile.username.data = session['username']
+        uprofile.name.data = name
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file ')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            cur=mysql.connection.cursor()
+            cur.execute("UPDATE users SET dp=%s where username=%s", [filename, session['username']])
+            mysql.connection.commit()
+            cur.execute("SELECT dp FROM users where username= %s",[session['username']] )
+            res=cur.fetchone()
+            dp=res['dp']
+            session['dp']= dp
+        if file and not allowed_file(file.filename):
+            flash('invalid image file')
+
+            #return redirect(url_for('uploaded_file',
+                                    #filename=filename))
     if request.method=='GET':
         uprofile.email.data = session['email']
         uprofile.username.data = session['username']
         uprofile.name.data = name
+        cur.execute("SELECT dp FROM users where username= %s",[session['username']] )
+        res=cur.fetchone()
+        dp=res['dp']
+        session['dp']= dp
+        dpform.picture.data=session['dp']
 
         
 
     #cur=mysql.connection.cursor()
     #profile_image = url_for('static', filename='profile_pic/'+ str(cur.execute("SELECT dp FROM users WHERE email=%s", [session['username']])))
-    return render_template('userprofile.html', uprofile=uprofile)
+    return render_template('userprofile.html', uprofile=uprofile, dpform=dpform)
+
+######TESTING BELOW-----DONT GO######
     
+
+
+def upload_file():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('uploaded_file',
+                                    filename=filename))
+    return render_template('upload.html')
+    '''
+    <!doctype html>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <form method=post enctype=multipart/form-data>
+      <p><input type=file name=file>
+         <input type=submit value=Upload>
+    </form>'''
+
+
+from flask import send_from_directory
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename)
+
+####END of TESTING####
+
 if __name__ == "__main__":
     app.secret_key='secret123'
     app.run(debug=True)

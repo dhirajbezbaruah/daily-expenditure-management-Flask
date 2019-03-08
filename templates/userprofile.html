@@ -6,7 +6,16 @@
       width: 400px;           
       height: 200px;          
       position: absolute;
-      top: 60%;
+      top: 65%;
+      left: 47%;
+      margin-top: -100px;     
+      margin-left: -150px;     
+  }
+  #form-wrapper1 {     
+      width: 400px;           
+      height: 200px;          
+      position: absolute;
+      top: 58%;
       left: 47%;
       margin-top: -100px;     
       margin-left: -150px;     
@@ -28,10 +37,15 @@
 </style>
 
 
-    <img src="static/profile_pic/Default.png" alt="Avatar" class="avatar">
+    <img src="static/profile_pic/{{session['dp']}}" alt="Avatar" class="avatar">
+    <form id='form-wrapper1' method=post enctype=multipart/form-data>
+        <p><input type=file name=file>
+           <input type=submit value=Update>
+    </form>
 
 
     {% from "includes/_formhelper.html" import render_field%}
+  
     <form id='form-wrapper' method="GET" action=''>
           <h5>Personal information:</h5>  
 
