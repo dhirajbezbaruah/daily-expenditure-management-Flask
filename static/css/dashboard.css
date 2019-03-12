@@ -1,0 +1,30 @@
+<style>
+    span {
+        display:inline-block;
+        margin-right:10px; 
+        width:300px; 
+     
+    
+        
+    } 
+    #form-wrapper {     
+        width: 400px;           
+        height: 200px;          
+        position: absolute;
+        top: 25%;
+        left: 5%;
+        margin-top: -100px;     
+        margin-left: -150px;    
+    }
+    body{
+        background-color: lemonchiffon;
+    }
+    #tblCustomers{
+        margin-top : 15px;
+    }
+    #button{
+        margin-top: 15px;
+    }
+
+    
+</style>

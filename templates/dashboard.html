@@ -5,92 +5,111 @@
 
 
 {% from "includes/_formhelper.html" import render_field%}
+
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/dashboard.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='dashboard.js') }}"></script>
 <style>
-#date {display:inline-block;margin-right:10px; width:200px; } 
-#location {display:inline-block; width:200px;} 
+/* The sidebar menu */
+.sidenav {
+  height: 100%; /* Full-height: remove this if you want "auto" height */
+  width: 400px; /* Set the width of the sidebar */
+  position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+  z-index: 1; /* Stay on top */
+  top: 30; /* Stay at the top */
+  right: 0;
+  background-color: greenyellow; /* Black */
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding-top: 20px;
+}
+
+/* The navigation menu links */
+.sidenav h5 {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+#budget{
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 20px;
+  color: #818181;
+  display: block;
+  width:300px;
+}
+
+/* When you mouse over the navigation links, change their color */
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+/* Style page content */
+.main {
+  margin-left: 160px; /* Same as the width of the sidebar */
+  padding: 0px 10px;
+}
+
+/* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+<style>
+    span {
+        display:inline-block;
+        margin-right:10px; 
+        width:300px; 
+     
+    
+        
+    } 
+    #form-wrapper {     
+        width: 400px;           
+        height: 200px;          
+        position: absolute;
+        top: 30%;
+        left: 20%;
+        margin-top: -100px;     
+        margin-left: -150px;    
+    }
+    body{
+        background-color: lemonchiffon;
+    }
+    #tblCustomers{
+        margin-top : 15px;
+    }
+    #button{
+        margin-top: 15px;
+    }
+
+    
 </style>
 
-<form method="POST" action=''>
+<div class="sidenav">
+    <h5>Your Budget of the Month is $$$$ Rs.</h5>
+    <h5>Total Spent is $$$$ Rs.</h5>
+    <h5>$$$$ Rs. left in your pocket </h5>
     
+</div>
+
+
+<div class="main">
+<form id='form-wrapper' method="POST" action=''>
     
-        Choose Date:
-        <input id=date class="form-control" type="date" name="date">
-        City:
-        <input id=location class="form-control" type="location" name="location">
+    <span>
+    Choose Date:
+    <input id="date" class="form-control" type="date" name="date">
+    City:
+    <input id="location" class="form-control" type="location" name="location">
+    </span>
 
 
-
-
-
-
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script type="text/javascript">
-        $(function () {
-            //Build an array containing Customer records.
-           
- 
-            //Add the data rows.
-            for (var i = 0; i < customers.length; i++) {
-                AddRow(customers[i][0], customers[i][1]);
-            }
-        });
- 
-        function Add() {
-            AddRow($("#txtName").val(), $("#price").val(), $("#quantity").val(), $("#txtCountry").val());
-            $("#txtName").val("");
-            $("#txtCountry").val("");
-            $("#quantity").val("");
-            $("#price").val("");
-        };
- 
-        function AddRow(name, country, price, quantity) {
-            //Get the reference of the Table's TBODY element.
-            var tBody = $("#tblCustomers > TBODY")[0];
- 
-            //Add Row.
-            row = tBody.insertRow(-1);
- 
-            //Add Name cell.
-            var cell = $(row.insertCell(-1));
-            cell.html(name);
- 
-            //Add Country cell.
-            cell = $(row.insertCell(-1));
-            cell.html(country);
-
-            cell = $(row.insertCell(-1));
-            cell.html(quantity);
-
-            cell = $(row.insertCell(-1));
-            cell.html(price);
- 
-            //Add Button cell.
-            cell = $(row.insertCell(-1));
-            var btnRemove = $("<input />");
-            btnRemove.attr("type", "button");
-            btnRemove.attr("onclick", "Remove(this);");
-            btnRemove.val("Remove");
-            cell.append(btnRemove);
-        };
- 
-        function Remove(button) {
-            //Determine the reference of the Row using the Button.
-            var row = $(button).closest("TR");
-            var name = $("TD", row).eq(0).html();
-            if (confirm("Do you want to delete: " + name)) {
- 
-                //Get the reference of the Table.
-                var table = $("#tblCustomers")[0];
- 
-                //Delete the Table row using it's Index.
-                table.deleteRow(row[0].rowIndex);
-            }
-        };
-    </script>
     <table id="tblCustomers" cellpadding="0" cellspacing="0" border="1">
         <thead>
             <tr>
-                <th>Name</th>
+                <th>Item name</th>
                 <th>price</th>
                 <th>quantity</th>
                 <th>total price</th>
@@ -108,11 +127,11 @@
             </tr>
         </tfoot>
     </table>
-    <input type='submit' class='btn btn-primary' value='Submit'>
+    <input id="button" type='submit' class='btn btn-primary' value='Submit'>
         
     
 </form>                           
-
+</div>
 
 {%endblock%}
 </div>

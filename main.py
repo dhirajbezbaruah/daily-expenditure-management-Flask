@@ -58,12 +58,12 @@ def validates(RegisterForm, password):
     elif len(p)<6:
         raise ValidationError('Minimum length of password should be 6')
 
-def valid(RegisterForm, password):
-    sp_cha=('!', '@', '#', '$', '%')
-    for i in password.data:
-        if i not in sp_cha:
+#def valid(RegisterForm, password):
+    #sp_cha=('!', '@', '#', '$', '%')
+    #for i in password.data:
+        #if i not in sp_cha:
             
-            raise ValidationError('sp')
+            #raise ValidationError('sp')
 
 
 class RegisterForm(Form):
