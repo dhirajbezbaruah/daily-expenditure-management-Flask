@@ -21,8 +21,8 @@
       margin-left: -150px;     
   }
   body{
-      background-color: lemonchiffon;
-  }
+    background-image: url("https://image.ibb.co/de6JzG/bitmap_1_1.png");
+}
   .avatar {
     position: absolute;
     left: 26%;
@@ -67,6 +67,12 @@
     .sidenav a:hover {
       color: #f1f1f1;
     }
+    #side-form h1{
+      left: 10px;
+      right:10 px
+      
+    }
+    
     
     /* Style page content */
     .main {
@@ -83,21 +89,28 @@
 
 
 <div class="sidenav">
-    <h5>Please Enter your Bugdet of the Month in Rs. <input class="center-block" type="number" step="0.01" name="amount" placeholder="0.00"><button>Submit</button></h5>
-    
-    
+        {% from "includes/_formhelper.html" import render_field%}
+        <h5>Please Enter Your Monthly Budget:</h5>
+    <form  class="form-inline" id="sidebar_form" method="POST" action=''>
+      <div class='form-group' id="side-form">
+            
+            <h1>{{render_field(sidebar.budget, class_='form-control')}}
+            <input id="button" type='submit' name='btn' class='btn btn-primary' value='Submit'></h1></div>
+    </form>
+    <h5>Your Updated Budget is {{session['budget']}} Rs.</h5>
 </div>
 
     <img src="static/profile_pic/{{session['dp']}}" alt="Avatar" class="avatar">
     <form id='form-wrapper1' method=post enctype=multipart/form-data>
         <p><input type=file name=file>
-           <input type=submit value=Update>
+           <input type=submit name='btn1' value=Update>
     </form>
 
 
     {% from "includes/_formhelper.html" import render_field%}
-  
+ 
     <form id='form-wrapper' method="GET" action=''>
+        
           <h5>Personal information:</h5>  
 
           <div class='form-group'>
@@ -111,6 +124,6 @@
           </div>
               
     </form>
-
+  
     
 {%endblock%}

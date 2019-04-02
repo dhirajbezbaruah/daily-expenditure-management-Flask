@@ -1,5 +1,5 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script type="text/javascript">
+    
         $(function () {
             //Build an array containing Customer records.
            
@@ -61,4 +61,4 @@
                 table.deleteRow(row[0].rowIndex);
             }
         };
-    </script>
+  

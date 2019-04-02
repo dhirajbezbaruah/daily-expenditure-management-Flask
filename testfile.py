@@ -1,8 +1,13 @@
-n=44
-rev=0
-while(n>0):
-    dig=n%10
-    rev=rev*10+dig
-    n=n//10
-if n==rev:
-    print("Reverse of the number:",rev)
+app.config['MYSQL_HOST'] ='localhost'
+app.config['MYSQL_USER'] ='root'
+app.config['MYSQL_PASSWORD'] ='1111'
+app.config['MYSQL_DB'] ='myflaskapp'
+app.config['MYSQL_CURSORCLASS'] ='DictCursor'
+
+mysql=MySQL(app)
+
+
+cur=mysql.connection.cursor()
+cur.execute("SELECT price FROM record")
+for row in cur.fetchall():
+    print (row[0])

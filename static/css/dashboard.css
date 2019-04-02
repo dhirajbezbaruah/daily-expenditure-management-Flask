@@ -1,4 +1,52 @@
 <style>
+/* The sidebar menu */
+.sidenav {
+  height: 100%; /* Full-height: remove this if you want "auto" height */
+  width: 280px; /* Set the width of the sidebar */
+  position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+  z-index: 1; /* Stay on top */
+  top: 30; /* Stay at the top */
+  right: 0;
+  background-color: greenyellow; /* Black */
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding-top: 20px;
+}
+
+/* The navigation menu links */
+.sidenav h5 {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+#budget{
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 20px;
+  color: #818181;
+  display: block;
+  width:300px;
+}
+
+/* When you mouse over the navigation links, change their color */
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+/* Style page content */
+.main {
+  margin-left: 160px; /* Same as the width of the sidebar */
+  padding: 0px 10px;
+}
+
+/* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+<style>
     span {
         display:inline-block;
         margin-right:10px; 
@@ -11,8 +59,8 @@
         width: 400px;           
         height: 200px;          
         position: absolute;
-        top: 25%;
-        left: 5%;
+        top: 30%;
+        left: 20%;
         margin-top: -100px;     
         margin-left: -150px;    
     }
@@ -21,9 +69,20 @@
     }
     #tblCustomers{
         margin-top : 15px;
+        left: 1%;
+        margin-left: 0%;
     }
     #button{
         margin-top: 15px;
+    }
+    #nn {
+      display: inline;
+       /* 1. oh noes, my inputs are styled as block... */
+    }
+    #entry {
+      display: block;
+    }
+    
     }
 
     

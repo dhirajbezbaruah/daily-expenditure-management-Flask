@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, session, logging, flash
-from wtforms import StringField, PasswordField, validators, Form, DateField, ValidationError
+from wtforms import StringField, PasswordField, validators, Form, DateField, ValidationError, SelectField
 from flask_mysqldb import MySQL
 from passlib.hash import sha256_crypt
 from functools import wraps
@@ -11,9 +11,15 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, TimedJSONWebS
 #import safe
 from werkzeug.utils import secure_filename
 from PIL import Image
+from flask_bootstrap import Bootstrap
+from flask_datepicker import datepicker
+from datetime import date, datetime, timedelta
+
+app = Flask(__name__)
+Bootstrap(app)
+datepicker(app)
 
 
-app=Flask(__name__)
 #mysql config
 app.config['MYSQL_HOST'] ='localhost'
 app.config['MYSQL_USER'] ='root'
@@ -36,6 +42,8 @@ mail = Mail(app)
 
 s= URLSafeTimedSerializer('secret123')
 
+
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -48,6 +56,11 @@ def login_required(f):
 #Home
 @app.route("/")
 def index():
+    return render_template('home.html')
+
+@login_required
+@app.route("/index")
+def home():
     return render_template('index.html')
 
 def validates(RegisterForm, password):
@@ -89,6 +102,7 @@ def register():
         username=form.username.data
         password=sha256_crypt.encrypt(str(form.password.data))
         confirm_email='0'
+        budget='1000'
 
 
         cur= mysql.connection.cursor()
@@ -108,9 +122,9 @@ def register():
             
 
         else:
-            cur.execute("INSERT INTO users(name, email, username, password, confirm_email) VALUES(%s, %s, %s, %s, %s)", (name, email, username, password, confirm_email))
-        
+            cur.execute("INSERT INTO users(name, email, username, password, confirm_email, budget) VALUES(%s, %s, %s, %s, %s, %s)", (name, email, username, password, confirm_email, budget))
             mysql.connection.commit()
+            
             token= s.dumps(email, salt='email-confirm')
             msg=Message('Confirm Email', sender='dbezbaruah412@gmail.com', recipients=[email])
             link=url_for('confirm_email', token=token, _external=True)
@@ -180,7 +194,7 @@ def login():
                 session['email']= email
                 
                 flash('you are now logged in', 'success')
-                return redirect(url_for('index'))
+                return redirect(url_for('home'))
             elif sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='0'  and password=%s", [password])):
                 session['logged_in']= False
                 session.clear()
@@ -209,7 +223,7 @@ def login():
 
 
                 flash('you are now logged in', 'success')
-                return redirect(url_for('index'))
+                return redirect(url_for('home'))
             elif sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='0'  and password=%s", [password])):
                 #flash("confirm email first")
                 session['logged_in']= False
@@ -301,23 +315,288 @@ class DateForm(Form):
 @app.route('/dashboard', methods=['POST','GET'])
 @login_required
 def dashboard():
+    today = (datetime.now() - timedelta(0)).strftime('%Y-%m-%d')
+    yesterday= (datetime.now() - timedelta(1)).strftime('%Y-%m-%d')
+    yesterday1= (datetime.now() - timedelta(2)).strftime('%Y-%m-%d')
+    yesterday2= (datetime.now() - timedelta(3)).strftime('%Y-%m-%d')
+    yesterday3= (datetime.now() - timedelta(4)).strftime('%Y-%m-%d')
+    yesterday4= (datetime.now() - timedelta(5)).strftime('%Y-%m-%d')
+    yesterday5= (datetime.now() - timedelta(6)).strftime('%Y-%m-%d')
+    yesterday6= (datetime.now() - timedelta(7)).strftime('%Y-%m-%d')
+    yesterday7= (datetime.now() - timedelta(8)).strftime('%Y-%m-%d')
+    yesterday8= (datetime.now() - timedelta(9)).strftime('%Y-%m-%d')
+
+    cur=mysql.connection.cursor()
+    cur.execute("select daily from record where date = CURDATE() and username=%s", [session['username']] )
+    res1=cur.fetchone()
+    if res1 is not None:
+        res1=res1['daily']
+    else:
+        res1='0'
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 1 DAY) and username=%s", [session['username']] )
+    res2=cur.fetchone()
+    if res2 is not None:
+        res2=res2['daily']
+    else:
+        res2='0'
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 2 DAY) and username=%s", [session['username']] )
+    res3=cur.fetchone()
+    if res3 is not None:
+        res3=res3['daily']
+    else:
+        res3='0'
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 3 DAY) and username=%s", [session['username']] )
+    res4=cur.fetchone()
+    if res4 is not None:
+        res4=res4['daily']
+    else:
+        res4='0'
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 4 DAY) and username=%s", [session['username']] )
+    res5=cur.fetchone()
+    if res5 is not None:
+        res5=res5['daily']
+    else:
+        res5="0"
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 5 DAY) and username=%s", [session['username']] )
+    res6=cur.fetchone()
+    if res6 is not None:
+        res6=res6['daily']
+    else:
+        res6="0"
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 6 DAY) and username=%s", [session['username']] )
+    res7=cur.fetchone()
+    if res7 is not None:
+        res7=res7['daily']
+    else:
+        res7="0"
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 7 DAY) and username=%s", [session['username']] )
+    res8=cur.fetchone()
+    if res8 is not None:
+        res8=res8['daily']
+    else:
+        res8='0'
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 8 DAY) and username=%s", [session['username']] )
+    res9=cur.fetchone()
+    if res9 is not None:
+        res9=res9['daily']
+    else:
+        res9='0'
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 9 DAY) and username=%s", [session['username']] )
+    res10=cur.fetchone()
+    if res10 is not None:
+        res10=res10['daily']
+    else:
+        res10="0"
+
+
+    labels = [
+        yesterday8, yesterday7,
+        yesterday6, yesterday5, yesterday4, yesterday3,
+        yesterday2, yesterday1, yesterday, today
+    ]
+
+    values = [
+        res10, res9,
+        res8, res7, res6, res5,
+        res4, res3, res2, res1
+    ]
+
+    colors = [
+        "#F7464A", "#46BFBD", "#FDB45C", "#FEDCBA",
+        "#ABCDEF", "#DDDDDD", "#ABCABC", "#4169E1",
+        "#C71585", "#FF4500", "#FEDCBA", "#46BFBD"]
+
+
+
+    line_labels=labels
+    line_values=values
+
     formdate=DateForm(request.form)
+    cur=mysql.connection.cursor()
+    cur.execute("SELECT budget FROM users where username= %s",[session['username']])
+    res=cur.fetchone()
+    budget=res['budget']
+    session['budget']= budget
+    #cur.execute("SELECT spent FROM users where username= %s order by id asc limit 1",[session['username']])
+    #res1=cur.fetchone()
+    #if res1 is not None:
+    #    spent= res1['spent']
+    #    session['spent']= spent
+    #else:
+    #    session['spent']='0'
+    mesg_warn=" "
+    cur.execute("select spent from record where username=%s ORDER BY id DESC LIMIT 1", [session['username']])
+    res=cur.fetchone()
+    if res is not None:
+        spent=res['spent']
+        session['spent']=spent
+    else:
+        session['spent']='0'
+
+    cur.execute("SELECT item, COUNT(item) AS popularity FROM record WHERE date= CURDATE() GROUP BY item ORDER BY popularity DESC limit 1")
+    resitem=cur.fetchone()
+    if resitem is not None:
+        session['item']=resitem['item']
+    
+
+    session['money_left']= int(session['budget'])-int(session['spent'])
+    if session['money_left']<500:
+        mesg_warn="Your Budget is getting exhausted. Please spend accordingly"
+        #flash("Your Budget is ver low")
+    
+    cur = mysql.connection.cursor()
+    resultValue = cur.execute("SELECT * FROM record WHERE date = CURDATE() and username=%s", [session['username']])
+    if resultValue > -1:
+        datas = cur.fetchall()
+    
+    
+    
+    #session['today']=cur.fetchone()
+
     if request.method=='POST':
-        dt=formdate.dt.data
+        
+        
+        date=request.form['pick']
+        place=request.form['location']
+
+        name=request.form['itemname']
+        
+        quant=request.form['quant']
+        total=request.form['total']
+
+        comment=request.form['comment']
+
+        
         #then = dt.strftime('%Y-%m-%d %H-%M-%S')
         #then=str(dt)
         #formatted_date = dt.strftime('%Y-%m-%d')
 
         cur=mysql.connection.cursor()
-        cur.execute("INSERT INTO record (date) VALUES('%s')", (dt))
+        cur.execute("INSERT INTO record (date, username, item, quantity, price, place, comment) VALUES(%s, %s, %s, %s, %s, %s, %s)", (date, session['username'], name, quant, total, place, comment))
         mysql.connection.commit()
+
+        cur=mysql.connection.cursor()
+        cur.execute("select price from record where username=%s ORDER BY id DESC LIMIT 1", [session['username']])
+        res=cur.fetchone()
+        res1=res['price']
+        res12=int(res1)
+        #res1=int(res)
+        cur.execute("select spent from record where username=%s", [session['username']])
+        res2=cur.fetchone()
+        res3=res2['spent']
+        res32=int(res3)
+        #res3=int(res2)
+        resfinal=(res12+res32)
+
+        cur.execute("select daily from record where username=%s and date= CURDATE()", [session['username']])
+        restoday=cur.fetchone()
+        restoday1=restoday['daily']
+        restoday12=int(restoday1)
+
+        todayfinal=(restoday12+res12)
+        
+        cur.execute("UPDATE record SET daily=%s where date = CURDATE() and username=%s", [todayfinal, session['username']])
+        mysql.connection.commit()
+
+        cur.execute("UPDATE record SET spent=%s where username=%s", [resfinal, session['username']])
+        mysql.connection.commit()
+
+        return redirect(url_for('dashboard'))
+
         #cur.close()
+    
+    #return render_template('analysis.html', max=3000, colors=colors, labels=line_labels, values=line_values)
+         
 
-    return render_template('dashboard.html', formdate=formdate)
+    return render_template('dashboard.html', max=3000, colors=colors, labels=line_labels, values=line_values, formdate=formdate, mesg_warn=mesg_warn, datas=datas)
 
 
+##Record Detail
+
+class inputform(Form):
+    myChoices =[('today', 'Today'), ('lastweek', 'Last 7 days'), ('month', 'Last 30 days')]
+    myField = SelectField(u'Field name', choices = myChoices)
+
+@app.route("/record", methods=['GET', 'POST'])
+@login_required
+def record():
+    #flash("Record Has Been Deleted Successfully")
+    date_select=inputform(request.form)
+    cur = mysql.connection.cursor()
+    resultValue = cur.execute("SELECT * FROM record WHERE date = CURDATE() and username=%s", [session['username']])
+    if resultValue > -1:
+        datas = cur.fetchall()
+    return render_template('records.html', datas=datas, date_select=date_select)
+
+@app.route("/week_record", methods=['GET', 'POST'])
+@login_required
+def week_record():
+    #flash("Record Has Been Deleted Successfully")
+    date_select=inputform(request.form)
+    cur = mysql.connection.cursor()
+    resultValue = cur.execute("SELECT * FROM record WHERE date >= NOW() + INTERVAL -7 DAY AND date <  NOW() + INTERVAL  0 DAY and username=%s", [session['username']])
+    if resultValue > -1:
+        datas = cur.fetchall()
+    return render_template('week_records.html', datas=datas, date_select=date_select)
+@app.route("/month_record", methods=['GET', 'POST'])
+@login_required
+def month_record():
+    #flash("Record Has Been Deleted Successfully")
+    date_select=inputform(request.form)
+    cur = mysql.connection.cursor()
+    resultValue = cur.execute("SELECT * FROM record WHERE date >= NOW() + INTERVAL -30 DAY AND date <  NOW() + INTERVAL  0 DAY and username=%s", [session['username']])
+    if resultValue > -1:
+        datas = cur.fetchall()
+    return render_template('month_records.html', datas=datas, date_select=date_select)
+@app.route("/all_record", methods=['GET', 'POST'])
+@login_required
+def all_record():
+    cur = mysql.connection.cursor()
+    result=cur.execute("SELECT SUM(price) FROM new")
+    #result = sum(int(x) for x in cur.fetchall():
+    x=cur.fetchall()
+    
+
+
+    
+
+    
+    
+    #result=result[0]
+    #flash("Record Has Been Deleted Successfully")
+    date_select=inputform(request.form)
+    
+    resultValue = cur.execute("SELECT * FROM record where username=%s", [session['username']])
+    if resultValue > -1:
+        datas = cur.fetchall()
+    return render_template('all_records.html', datas=datas, date_select=date_select, result=result)
+
+@app.route('/delete/<string:id>', methods = ['GET'])
+def delete(id):
+    
+    cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM record WHERE id=%s", (id,))
+    mysql.connection.commit()
+    flash("Record Has Been Deleted Successfully")
+    return redirect(url_for('record'))
 
 #User Profile
+def validates_budget():
+    p=budget.data
+    #spec= "!@#$%&_="
+    if not any(i.isdigit() for i in p):
+        raise ValidationError('Password must contain numbers and letters')
+
+
 class userprofile(Form):
     name=StringField('Name', [validators.DataRequired(), validators.Length(min=1, max=50)])
     username= StringField('username', [validators.DataRequired(), validators.Length(min=4, max=50)])
@@ -326,7 +605,8 @@ class userprofile(Form):
 class profile_pic(Form):
     picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
     #submit = SubmitField('Update')
-
+class sidebar_form(Form):
+    budget=StringField('', [validators.DataRequired()], render_kw={"placeholder": "eg. 5,000"})
 
 
 UPLOAD_FOLDER = 'static\\profile_pic'
@@ -338,12 +618,16 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+
 @app.route('/profile', methods=['POST','GET'])
 @login_required
 def profile():
+   
     cur=mysql.connection.cursor()
+    
 
-     
+    
 
     cur.execute("SELECT name FROM users where email= %s",[session['email']] )
     res=cur.fetchone()
@@ -352,50 +636,203 @@ def profile():
 
     uprofile=userprofile(request.form)
     dpform=profile_pic(request.form)
-    if request.method == 'POST':
+    sidebar=sidebar_form(request.form)
+
+    uprofile.email.data = session['email']
+    uprofile.username.data = session['username']
+    uprofile.name.data = name
+    mysql.connection.commit()
+    cur.execute("SELECT dp FROM users where username= %s",[session['username']] )
+    res=cur.fetchone()
+    dp=res['dp']
+    session['dp']= dp
+
+    if request.method=='POST':
+        
+        
         uprofile.email.data = session['email']
         uprofile.username.data = session['username']
         uprofile.name.data = name
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file ')
-            return redirect(request.url)
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            cur=mysql.connection.cursor()
-            cur.execute("UPDATE users SET dp=%s where username=%s", [filename, session['username']])
-            mysql.connection.commit()
+        
+        if "btn1" in request.form:
+            # check if the post request has the file part
+            if 'file' not in request.files:
+                flash('No file ')
+                return redirect(request.url)
+            file = request.files['file']
+            # if user does not select file, browser also
+            # submit a empty part without filename
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                cur=mysql.connection.cursor()
+                cur.execute("UPDATE users SET dp=%s where username=%s", [filename, session['username']])
+                mysql.connection.commit()
+                cur.execute("SELECT dp FROM users where username= %s",[session['username']] )
+                res=cur.fetchone()
+                dp=res['dp']
+                session['dp']= dp
+            if file and not allowed_file(file.filename):
+                flash('invalid image file')
+        session['dp']= dp
+        if request.method=='POST':
+
+            if "btn" in request.form:
+                uprofile.email.data = session['email']
+                uprofile.username.data = session['username']
+                uprofile.name.data = name
+                
+                budget=sidebar.budget.data
+                #budget=str(budget)
+                cur=mysql.connection.cursor()
+                cur.execute("UPDATE users SET budget=%s where username=%s", [budget, session['username']])
+                mysql.connection.commit()
+                cur.execute("SELECT budget FROM users where username= %s",[session['username']])
+                res=cur.fetchone()
+                budget=res['budget']
+                session['budget']= budget
+            return redirect(url_for('profile'))
+
+            #return redirect(url_for('uploaded_file',
+                                    #filename=filename))
+        if request.method=='GET':
+            uprofile.email.data = session['email']
+            uprofile.username.data = session['username']
+            uprofile.name.data = name
             cur.execute("SELECT dp FROM users where username= %s",[session['username']] )
             res=cur.fetchone()
             dp=res['dp']
             session['dp']= dp
-        if file and not allowed_file(file.filename):
-            flash('invalid image file')
-
-            #return redirect(url_for('uploaded_file',
-                                    #filename=filename))
-    if request.method=='GET':
-        uprofile.email.data = session['email']
-        uprofile.username.data = session['username']
-        uprofile.name.data = name
-        cur.execute("SELECT dp FROM users where username= %s",[session['username']] )
-        res=cur.fetchone()
-        dp=res['dp']
-        session['dp']= dp
-        dpform.picture.data=session['dp']
-
+            dpform.picture.data=session['dp']
         
 
-    #cur=mysql.connection.cursor()
+    
+        
+
+       
+        
     #profile_image = url_for('static', filename='profile_pic/'+ str(cur.execute("SELECT dp FROM users WHERE email=%s", [session['username']])))
-    return render_template('userprofile.html', uprofile=uprofile, dpform=dpform)
+    return render_template('userprofile.html', uprofile=uprofile, dpform=dpform, sidebar=sidebar)
+
+##ANALYSIS
+
+@app.route('/line')
+def line():
+    
+    today = str(date.today())
+    yesterday= (datetime.now() - timedelta(1)).strftime('%Y-%m-%d')
+    yesterday1= (datetime.now() - timedelta(2)).strftime('%Y-%m-%d')
+    yesterday2= (datetime.now() - timedelta(3)).strftime('%Y-%m-%d')
+    yesterday3= (datetime.now() - timedelta(4)).strftime('%Y-%m-%d')
+    yesterday4= (datetime.now() - timedelta(5)).strftime('%Y-%m-%d')
+    yesterday5= (datetime.now() - timedelta(6)).strftime('%Y-%m-%d')
+    yesterday6= (datetime.now() - timedelta(7)).strftime('%Y-%m-%d')
+    yesterday7= (datetime.now() - timedelta(8)).strftime('%Y-%m-%d')
+    yesterday8= (datetime.now() - timedelta(9)).strftime('%Y-%m-%d')
+
+    cur=mysql.connection.cursor()
+    cur.execute("select daily from record where date = CURDATE() and username=%s", [session['username']] )
+    res1=cur.fetchone()
+    if res1 is not None:
+        res1=res1['daily']
+    else:
+        res1='0'
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 1 DAY) and username=%s", [session['username']] )
+    res2=cur.fetchone()
+    if res2 is not None:
+        res2=res2['daily']
+    else:
+        res2='0'
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 2 DAY) and username=%s", [session['username']] )
+    res3=cur.fetchone()
+    if res3 is not None:
+        res3=res3['daily']
+    else:
+        res3='0'
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 3 DAY) and username=%s", [session['username']] )
+    res4=cur.fetchone()
+    if res4 is not None:
+        res4=res4['daily']
+    else:
+        res4='0'
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 4 DAY) and username=%s", [session['username']] )
+    res5=cur.fetchone()
+    if res5 is not None:
+        res5=res5['daily']
+    else:
+        res5="0"
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 5 DAY) and username=%s", [session['username']] )
+    res6=cur.fetchone()
+    if res6 is not None:
+        res6=res6['daily']
+    else:
+        res6="0"
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 6 DAY) and username=%s", [session['username']] )
+    res7=cur.fetchone()
+    if res7 is not None:
+        res7=res7['daily']
+    else:
+        res7="0"
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 7 DAY) and username=%s", [session['username']] )
+    res8=cur.fetchone()
+    if res8 is not None:
+        res8=res8['daily']
+    else:
+        res8='0'
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 8 DAY) and username=%s", [session['username']] )
+    res9=cur.fetchone()
+    if res9 is not None:
+        res9=res9['daily']
+    else:
+        res9='0'
+
+    cur.execute("select daily from record WHERE DATE(date) = SUBDATE(CURRENT_DATE(), INTERVAL 9 DAY) and username=%s", [session['username']] )
+    res10=cur.fetchone()
+    if res10 is not None:
+        res10=res10['daily']
+    else:
+        res10="0"
+
+
+    labels = [
+        yesterday8, yesterday7,
+        yesterday6, yesterday5, yesterday4, yesterday3,
+        yesterday2, yesterday1, yesterday, today
+    ]
+
+    values = [
+        res10, res9,
+        res8, res7, res6, res5,
+        res4, res3, res2, res1
+    ]
+
+    colors = [
+        "#F7464A", "#46BFBD", "#FDB45C", "#FEDCBA",
+        "#ABCDEF", "#DDDDDD", "#ABCABC", "#4169E1",
+        "#C71585", "#FF4500", "#FEDCBA", "#46BFBD"]
+
+
+
+    line_labels=labels
+    line_values=values
+    return render_template('analysis.html', max=3000, set=zip(values, labels, colors))
+     
+
+
+
+
+
 
 ######TESTING BELOW-----DONT GO######
     
@@ -418,7 +855,6 @@ def upload_file():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
 
-
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
@@ -438,6 +874,28 @@ def upload_file():
             return redirect(url_for('uploaded_file',
                                     filename=filename))
     return render_template('upload.html')
+
+
+@app.route('/feedback', methods=['GET', 'POST'])
+def feedback():
+    return render_template('feedback.html')
+
+
+@app.route('/user_details')
+def user_details():
+    cur=mysql.connection.cursor()
+    cur.execute("select * from users")
+    data = cur.fetchall()
+    ("select name from users where email=%s", [session['email']])
+    name=cur.fetchone()
+    #nn=name["nn"]
+    #for column in data:
+         #name=("select name from users")
+
+    return render_template('user_details.html', data=data, name=name)
+
+
+
     '''
     <!doctype html>
     <title>Upload new File</title>

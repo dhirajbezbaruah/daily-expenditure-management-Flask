@@ -1,0 +1,113 @@
+{% extends 'layout.html' %}
+{% block body%}
+{% from "includes/_formhelper.html" import render_field%}
+
+<script>
+  function createPDF() {
+      var sTable = document.getElementById('customer').innerHTML;
+
+      var style = "<style>";
+      style = style + "table {width: 100%;font: 17px Calibri;}";
+      style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+      style = style + "padding: 2px 3px;text-align: center;}";
+      style = style + "</style>";
+
+      // CREATE A WINDOW OBJECT.
+      var win = window.open('', '', 'height=700,width=700');
+
+      win.document.write('<html><head>');
+      win.document.write('<title>Profile</title>');   // <title> FOR PDF HEADER.
+      win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+      win.document.write('</head>');
+      win.document.write('<body>');
+      win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+      win.document.write('</body></html>');
+
+      win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+      win.print();    // PRINT THE CONTENTS.
+  }
+</script>
+<input type="button" value="Generate PDF" 
+id="btPrint" onclick="createPDF()" />
+<div>
+    &ensp;  
+</div>
+    
+  <SELECT id="s1" NAME="section" onChange="SelectRedirect();">
+  <Option value="">Select</option>
+  <Option value="today">Today</option>
+  <Option value="week">Last 7 days</option>
+  <Option value="month">Last 30 days</option>
+  <Option value="all">Lifetime</option>
+  
+  </SELECT>
+  <div>
+      &ensp;  
+  </div>
+{{result}}
+<table class="table table-sm table-dark">
+
+
+    <th>
+      
+      <td>Place</td>
+      <td>Item</td>
+      <td>Quantity</td>
+      <td>Price</td>
+      <td>Comment</td>
+    </th>
+
+
+    {% for row in datas %}
+    <tr>
+        <td>{{row[0]}}</td>
+        
+        <td>{{row['place']}}</td>
+        <td>{{row['item']}}</td>
+        <td>{{row['quantity']}}</td>
+        <td>{{row['price']}}</td>
+        <td>{{row['comment']}}</td>
+        
+        
+    </tr>
+    {% endfor %}
+  </table>
+
+
+  <script language="javascript">
+    function SelectRedirect(){
+    // ON selection of section this function will work
+    //alert( document.getElementById('s1').value);
+    
+    switch(document.getElementById('s1').value)
+    {
+    case "today":
+    window.location="/record";
+    break;
+    
+    case "week":
+    window.location="/week_record";
+    break;
+    
+    case "month":
+    window.location="/month_record";
+    break;
+    case "all":
+    window.location="/all_record";
+    break;
+    
+
+    
+    /// Can be extended to other different selections of SubCategory //////
+    default:
+    window.location="/record"; // if no selection matches then redirected to home page
+    break;
+    }// end of switch 
+    }
+    ////////////////// 
+    </script>
+    
+    
+    
+    {% endblock %}

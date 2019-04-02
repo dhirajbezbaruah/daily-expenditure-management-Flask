@@ -1,0 +1,279 @@
+{%extends 'layout.html'%}
+<div class='container'>
+
+{%block body%}
+
+
+{% from "includes/_formhelper.html" import render_field%}
+
+
+
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/1dashboard.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='1dashboard.js') }}"></script>
+<style>
+/* The sidebar menu */
+.sidenav {
+  height: 100%; /* Full-height: remove this if you want "auto" height */
+  width: 280px; /* Set the width of the sidebar */
+  position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+  z-index: 1; /* Stay on top */
+  top: 30; /* Stay at the top */
+  right: 0;
+  background-color: greenyellow; /* Black */
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding-top: 20px;
+}
+
+/* The navigation menu links */
+.sidenav h5 {
+
+  font-size: 20px;
+  color: #818181;
+  display: block;
+}
+.sidenav h4 {
+
+font-size: 20px;
+color: blue;
+display: block;
+}
+
+
+
+/* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+<style>
+
+#rec{
+  position: fixed;
+  bottom: 0;
+  right: 300px;
+  left: 0px;
+  
+}
+</style>
+
+<style>
+    span {
+        display:inline-block;
+        margin-right:10px; 
+        width:300px; 
+     
+    
+        
+    } 
+    #form-wrapper {     
+        width: 400px;           
+        height: 200px;          
+        position: absolute;
+        top: 30%;
+        left: 20%;
+        margin-top: -100px;     
+        margin-left: -150px;    
+    }
+    body{
+        background-color: lemonchiffon;
+    }
+    
+</style>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        //Build an array containing Customer records.
+       
+
+        //Add the data rows.
+        for (var i = 0; i < customers.length; i++) {
+            AddRow(customers[i][0], customers[i][1]);
+        }
+    });
+
+    function Add() {
+        AddRow($("#itemname").val(), $("#price").val(), $("#quantity").val(), $("#total").val());
+        $("#itemname").val("");
+        $("#price").val("");
+        $("#quantity").val("");
+        $("#total").val("");
+    };
+
+    function AddRow(itemname, price, quantity, total) {
+        //Get the reference of the Table's TBODY element.
+        var tBody = $("#tblCustomers > TBODY")[0];
+
+        //Add Row.
+        row = tBody.insertRow(-1);
+
+        //Add Name cell.
+        var cell = $(row.insertCell(-1));
+        cell.html(itemname);
+
+        //Add Country cell.
+        cell = $(row.insertCell(-1));
+        cell.html(price);
+
+        cell = $(row.insertCell(-1));
+        cell.html(quantity);
+
+        cell = $(row.insertCell(-1));
+        cell.html(total);
+
+        //Add Button cell.
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("onclick", "Remove(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+    };
+
+    function Remove(button) {
+        //Determine the reference of the Row using the Button.
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+
+            //Get the reference of the Table.
+            var table = $("#tblCustomers")[0];
+
+            //Delete the Table row using it's Index.
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+    function calc() 
+        {
+        var price = document.getElementById("price").value;
+        var noTickets = document.getElementById("quantity").value;
+        var total = parseFloat(price) * noTickets
+        if (!isNaN(total))
+            document.getElementById("total").value = total
+        }
+    function edit() {
+        document.getElementById("total").readOnly = true;
+    }
+</script>
+
+
+
+
+
+
+
+<div class="sidenav">
+    <h5>Date: <span id="datetime"></span></h5>
+
+    <script>
+    var dt = new Date();
+    document.getElementById("datetime").innerHTML = dt.toLocaleDateString();
+    </script>
+    <h5>Your Budget of the Month is {{session['budget']}} Rs.</h5>
+    <h5>Total Spent is {{session['spent']}} Rs.</h5>
+    <h5>Rs. {{session['money_left']}} left in your pocket </h5>
+    <h4>You bought today "{{session['item']}}" most no. of time</h4>
+    
+</div>
+
+
+
+
+
+
+
+
+<div class="main">
+        {{mesg_warn}}
+
+<form id='form-wrapper' method="POST" action=''>
+    
+    
+        <span>
+        <meta charset="utf-8"/>
+        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/DateTimePicker.css') }}">
+    
+        
+          
+        
+
+        <div id="dtBox"> </div>
+
+        <script type="text/javascript" src="{{ url_for('static', filename='js/Gruntfile.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/DateTimePicker.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/DateTimePicker-i18n.js') }}"></script>
+
+        <script>
+            $('#dtBox').DateTimePicker({
+              dateFormat: "yyyy-MM-dd"
+            });
+            
+            
+            
+
+        </script>  
+    <div id='nn'>
+    <input id="datepick" name="pick" type="text" placeholder="Select Date-Time" data-field="date" readonly>
+    <input id="location" name="location" type="text" Placeholder="Select Location">
+  </div>
+  <hr />
+    
+
+
+    <table id="tblCustomers" cellpadding="0" cellspacing="0" border="1">
+      <thead>
+          <tr>
+              <th>Item name</th>
+              <th>price</th>
+              <th>quantity</th>
+              <th>total price</th>
+          </tr>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
+          <tr>
+              <td><input type="text" name="itemname" id="itemname" ></td>
+              <td><input type="number" name="price" id="price" oninput="calc()"></td>
+              <td><input type="number" name="quant" id="quantity" oninput="calc()" ></td>
+              <td><input type="number" name="total" id="total" onclick="edit()" ></td>
+              <td><input type="button" name="add" id="add" onclick="Add()" value="Add" /></td>
+          </tr>
+      </tfoot>
+  </table>
+    <input id="button" type='submit' class='btn btn-primary' value='Submit'>
+    
+    
+</form>                           
+</div>
+<div>
+    
+    <table id="rec" class="table table-sm" >
+            <h3>Today's Expenses</h3>
+        <th>
+          
+          <td>Place</td>
+          <td>Item</td>
+          <td>Quantity</td>
+          <td>Price</td>
+          <td>n</td>
+        </th>
+    
+    
+        {% for row in datas %}
+        <tr>
+            <td>{{row[0]}}</td>
+            
+            <td>{{row['place']}}</td>
+            <td>{{row['item']}}</td>
+            <td>{{row['quantity']}}</td>
+            <td>{{row['price']}}</td>
+            
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+{%endblock%}
+</div>
