@@ -531,6 +531,7 @@ def dashboard():
 
         cur.execute("UPDATE record SET spent=%s where username=%s", [resfinal, session['username']])
         mysql.connection.commit()
+        flash('Record updated!', 'success')
 
         return redirect(url_for('dashboard'))
 
