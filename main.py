@@ -171,7 +171,12 @@ class LoginForm(Form):
 
 
 @app.route('/login', methods=['GET', 'POST'])
+
 def login():
+
+    
+
+
     formlogin=LoginForm(request.form)
     if request.method=='POST' and formlogin.validate():
         usernamelogin=formlogin.usernamelogin.data
@@ -442,11 +447,19 @@ def dashboard():
     else:
         session['spent']='0'
 
-    cur.execute("SELECT item, COUNT(item) AS popularity FROM record WHERE date= CURDATE() GROUP BY item ORDER BY popularity DESC limit 1")
+    cur.execute("SELECT item, COUNT(item) AS popularity FROM record WHERE date >= NOW() + INTERVAL -7 DAY AND date <  NOW() + INTERVAL  0 DAY and username=%s GROUP BY item ORDER BY popularity DESC limit 1", [session['username']])
     resitem=cur.fetchone()
     if resitem is not None:
         session['item']=resitem['item']
-    
+    else:
+        session['item']='None'
+
+    cur.execute("select item, COUNT(item) AS popularity from record where username=%s GROUP BY item ORDER BY popularity DESC limit 1", [session['username']])
+    resall=cur.fetchone()
+    if resall is not None:
+        session['allitem']=resall['item']
+    else:
+        session['item']='None'
 
     session['money_left']= int(session['budget'])-int(session['spent'])
     if session['money_left']<500:
@@ -459,6 +472,12 @@ def dashboard():
         datas = cur.fetchall()
     
     
+#today's total
+    
+    
+
+    
+
     
     #session['today']=cur.fetchone()
 
@@ -499,8 +518,11 @@ def dashboard():
 
         cur.execute("select daily from record where username=%s and date= CURDATE()", [session['username']])
         restoday=cur.fetchone()
-        restoday1=restoday['daily']
-        restoday12=int(restoday1)
+        if restoday is not None:
+            restoday1=restoday['daily']
+            restoday12=int(restoday1)
+        else:
+            restoday12='0'
 
         todayfinal=(restoday12+res12)
         
@@ -517,7 +539,7 @@ def dashboard():
     #return render_template('analysis.html', max=3000, colors=colors, labels=line_labels, values=line_values)
          
 
-    return render_template('dashboard.html', max=3000, colors=colors, labels=line_labels, values=line_values, formdate=formdate, mesg_warn=mesg_warn, datas=datas)
+    return render_template('dashboard.html', res1=res1, max=3000, colors=colors, labels=line_labels, values=line_values, formdate=formdate, mesg_warn=mesg_warn, datas=datas)
 
 
 ##Record Detail

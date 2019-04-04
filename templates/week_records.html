@@ -28,8 +28,7 @@
       win.print();    // PRINT THE CONTENTS.
   }
 </script>
-<input type="button" value="Generate PDF" 
-id="btPrint" onclick="createPDF()" />
+
 <div>
         &ensp;  
     </div>
@@ -47,8 +46,18 @@ id="btPrint" onclick="createPDF()" />
         &ensp;  
     </div>
 
-<table class="table table-sm table-dark">
+    <input type="button" value="Generate PDF" 
+          id="btPrint" onclick="createPDF()" />
 
+         
+
+
+<div id="customer">
+    <h5 style= text-align:center>Last 7 day's Expense Records</h5>
+    <div>
+        &ensp;  
+      </div>
+<table class="table table-sm table-dark">
 
     <th>
       <td>Date</td>
@@ -70,12 +79,11 @@ id="btPrint" onclick="createPDF()" />
         <td>{{row['price']}}</td>
         <td>{{row['comment']}}</td>
         
-        <td><a href="/delete/{{ row['fb_id'] }}" class="btn btn-danger btn-xs" onclick="return confirm('Are You Sure For Delete?')">Delete</a></td>
         
     </tr>
     {% endfor %}
   </table>
-
+  <div id="customer">
 
   <script language="javascript">
     function SelectRedirect(){

@@ -93,8 +93,12 @@ h4{
     text-align: center;
     color: red;
 }  
-h5{
+#budget{
     text-align: center;
+}
+#fav{
+  text-align: center;
+  color: blue;
 }
 </style>
 <script>
@@ -140,8 +144,9 @@ function validateForm() {
 
 <h4>{{mesg_warn}}</h4>
 {{session['today']}}
-<h5>Your Monthly Budget is {{session['budget']}} Rs. Total Spent {{session['spent']}} Rs. and  {{session['money_left']}} Rs. left in your pocket </h5>
-    
+<h5 id='budget'>Your Monthly Budget is {{session['budget']}} Rs. Total Spent {{session['spent']}} Rs. and  {{session['money_left']}} Rs. left in your pocket </h5>
+<hr/>
+<h5 id="fav">You bought "{{session['item']}}" most frequently during last 7 days and your all time favourite item is "{{session['allitem']}}"</h5>
 <hr/>
 
 
@@ -189,7 +194,7 @@ function validateForm() {
           <th>price</th>
           <th>quantity</th>
           <th>total price</th>
-          <th>Comment</th>
+          <th>Comment(optional)</th>
       </tr>
   </thead>
   <tbody>
@@ -227,7 +232,7 @@ function validateForm() {
 
 
 
-<h3>Last 7 day's Expenses</h3>
+<h3>Last 7 day's Expense History</h3>
     <meta charset="utf-8" />
     
     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
@@ -300,7 +305,8 @@ function validateForm() {
     &ensp;
     
 </div>
-<caption><h3>Today's Expenses</h3></caption>
+
+<caption><h3>Today's Expenses | Total= {{res1}}</h3></caption>
 <div>
         &ensp;
 </div>

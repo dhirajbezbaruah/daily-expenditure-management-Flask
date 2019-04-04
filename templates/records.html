@@ -28,8 +28,7 @@
       win.print();    // PRINT THE CONTENTS.
   }
 </script>
-<input type="button" value="Generate PDF" 
-id="btPrint" onclick="createPDF()" />
+
 <div>
     &ensp;  
 </div>
@@ -45,7 +44,18 @@ id="btPrint" onclick="createPDF()" />
   <div>
       &ensp;  
   </div>
+  <input type="button" value="Generate PDF" 
+id="btPrint" onclick="createPDF()" />
+
+
+
 {{result}}
+
+<div id="customer">
+  <h5 style= text-align:center>Today's Expense Record(s)</h5>
+  <div>
+      &ensp;  
+    </div>
 <table class="table table-sm table-dark">
 
 
@@ -73,7 +83,7 @@ id="btPrint" onclick="createPDF()" />
     </tr>
     {% endfor %}
   </table>
-
+</div>
 
   <script language="javascript">
     function SelectRedirect(){
