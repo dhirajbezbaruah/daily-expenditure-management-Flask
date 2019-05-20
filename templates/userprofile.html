@@ -54,7 +54,7 @@
       padding: 6px 8px 6px 16px;
       text-decoration: none;
       font-size: 25px;
-      color: #818181;
+      color: #0f0f0f;
       display: block;
     }
     #center-block{
@@ -94,11 +94,16 @@
     <form  class="form-inline" id="sidebar_form" method="POST" action=''>
       <div class='form-group' id="side-form">
             
-            <h1>{{render_field(sidebar.budget, class_='form-control')}}
+            <h1 style=padding:20px 8px 6px 16px>{{render_field(sidebar.budget, class_='form-control')}}
             <input id="button" type='submit' name='btn' class='btn btn-primary' value='Submit'></h1></div>
     </form>
-    <h5>Your Updated Budget is {{session['budget']}} Rs.
-    **Your Budget is automatically updated to 1000 Rs. every month. Make sure to adjust the amount.</h5>
+    <h5>Your Updated Budget is {{session['budget']}} Rs.</h5>
+  
+    <div>
+        &ensp;  
+    </div>
+    <h5>   
+   <p style= color:red> **Your Budget is automatically updated to 1000 Rs. every month. Make sure to adjust the amount.</h5> </p>
 </div>
 
     <img src="static/profile_pic/{{session['dp']}}" alt="Avatar" class="avatar">
@@ -123,8 +128,8 @@
           <div class='form-group'>
               {{render_field(uprofile.username, class_='form-control')}}
           </div>
-              
+       
     </form>
-  
+   
     
 {%endblock%}

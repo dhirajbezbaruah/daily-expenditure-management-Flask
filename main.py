@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, session, logging, flash
-from wtforms import StringField, PasswordField, validators, Form, DateField, ValidationError, SelectField
+from wtforms import StringField, PasswordField, validators, Form, DateField, ValidationError, SelectField, TextAreaField
 from flask_mysqldb import MySQL
 from passlib.hash import sha256_crypt
 from functools import wraps
 from flask_mail import Mail, Message
 from flask_wtf.file import FileAllowed, FileField
-import secrets
+#import secrets
 import os
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, TimedJSONWebSignatureSerializer
 #import safe
@@ -34,8 +34,8 @@ mysql=MySQL(app)
 #mail server config
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'dbezbaruah412@gmail.com'
-app.config['MAIL_PASSWORD'] = 'adtu2k15'
+app.config['MAIL_USERNAME'] = '******@gmail.com'
+app.config['MAIL_PASSWORD'] = '*****'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
@@ -43,7 +43,7 @@ mail = Mail(app)
 s= URLSafeTimedSerializer('secret123')
 
 
-
+#users
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -51,6 +51,15 @@ def login_required(f):
             flash('You Must Login First!', 'danger')
             return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
+    return decorated_function
+#admins
+def admin_login(g):
+    @wraps(g)
+    def decorated_function(*args, **kwargs):
+        if 'adminlogin' not in session:
+            flash('Oops! Looks like You are not an admin.', 'danger')
+            return redirect(url_for('login', next=request.url))
+        return g(*args, **kwargs)
     return decorated_function
 
 #Home
@@ -79,8 +88,7 @@ def validates(RegisterForm, password):
             #raise ValidationError('sp')
 
 
-class RegisterForm(Form):
-    
+class RegisterForm(Form):    
     name=StringField('Name', [validators.DataRequired(), validators.Length(min=1, max=50)])
     username= StringField('username', [validators.DataRequired(), validators.Length(min=4, max=50)])
     email=StringField('Email', [validators.DataRequired(), validators.Length(min=6, max=100)])
@@ -91,10 +99,8 @@ class RegisterForm(Form):
     ])
     confirm=PasswordField('Confirm password', [validators.DataRequired()])
 
-
 @app.route('/register', methods=['GET', 'POST'])
-def register():
-    
+def register():    
     form=RegisterForm(request.form)
     if request.method=='POST' and form.validate():
         name=form.name.data
@@ -103,26 +109,23 @@ def register():
         password=sha256_crypt.encrypt(str(form.password.data))
         confirm_email='0'
         budget='1000'
+        price=0
+        date='2019-05-01'
 
-
-        cur= mysql.connection.cursor()
-        
+        cur= mysql.connection.cursor()        
         cur.execute("SELECT * FROM users WHERE email = %s", [email])
 
         if cur.fetchone() is not None:
             flash("Email Already registered :D, Login to continue", 'danger')
             return redirect(url_for('login'))
-        
-        
-    
+
         cur.execute("SELECT * FROM users WHERE username = %s", [username])
 
         if cur.fetchone() is not None:
             flash("Username already taken", 'danger')
-            
-
         else:
             cur.execute("INSERT INTO users(name, email, username, password, confirm_email, budget) VALUES(%s, %s, %s, %s, %s, %s)", (name, email, username, password, confirm_email, budget))
+            cur.execute("insert into record(username, price, date) values(%s, %s, %s)", (username, price, date))
             mysql.connection.commit()
             
             token= s.dumps(email, salt='email-confirm')
@@ -131,17 +134,12 @@ def register():
             msg.body='Thanks For siging up. Please click on the link to activate your account. The link will be expired in 1 hour. {}'.format(link)
             mail.send(msg)
         
-            flash('Please confirm your email', 'success')
+            flash('Thank you for signing up. Please check your email inbox to activate your account', 'success')
             return redirect(url_for('login'))
-        
-
-        cur.close()
-
-        
-
-        
+        cur.close()        
     return render_template('register.html', form=form)
-    
+
+
 @app.route('/confirm_email/<token>')
 
 def confirm_email(token):
@@ -199,7 +197,7 @@ def login():
                 session['email']= email
                 
                 flash('you are now logged in', 'success')
-                return redirect(url_for('home'))
+                return redirect(url_for('dashboard'))
             elif sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='0'  and password=%s", [password])):
                 session['logged_in']= False
                 session.clear()
@@ -228,7 +226,7 @@ def login():
 
 
                 flash('you are now logged in', 'success')
-                return redirect(url_for('home'))
+                return redirect(url_for('dashboard'))
             elif sha256_crypt.verify(passwordlogin, password) and  (cur.execute("SELECT * FROM users where confirm_email='0'  and password=%s", [password])):
                 #flash("confirm email first")
                 session['logged_in']= False
@@ -238,9 +236,19 @@ def login():
             else:
                 flash("Password didnot match", 'danger')
                 return redirect(url_for('login'))
+        #a="admin"
+        #b="password"
+        elif usernamelogin=='admin' and passwordlogin=='password':
+            session['adminlogin']= True
+            return redirect(url_for('admin'))
+
+
+
         else:
             flash('Username not found', 'danger')
             return redirect(url_for('login'))
+
+        
         
 
         cur.close()
@@ -262,6 +270,8 @@ def logout():
 @app.route('/unconfirmed')
 def unconfirmed():
     return render_template('unconfirmed.html')
+
+##Forget_Password
 
 class forget_form(Form):
     email=StringField('',[validators.DataRequired(), validators.Length(min=4, max=30)])
@@ -429,8 +439,11 @@ def dashboard():
     cur=mysql.connection.cursor()
     cur.execute("SELECT budget FROM users where username= %s",[session['username']])
     res=cur.fetchone()
-    budget=res['budget']
-    session['budget']= budget
+    if res is not None:
+        budget=res['budget']
+        session['budget']= budget
+    else:
+        session['budget']=0
     #cur.execute("SELECT spent FROM users where username= %s order by id asc limit 1",[session['username']])
     #res1=cur.fetchone()
     #if res1 is not None:
@@ -438,14 +451,18 @@ def dashboard():
     #    session['spent']= spent
     #else:
     #    session['spent']='0'
-    mesg_warn=" "
-    cur.execute("select spent from record where username=%s ORDER BY id DESC LIMIT 1", [session['username']])
+    
+    #Need more work
+    cur.execute("SELECT sum(price) AS total FROM record WHERE MONTH(date)=MONTH(CURDATE()) and username=%s", [session['username']])
     res=cur.fetchone()
     if res is not None:
-        spent=res['spent']
-        session['spent']=spent
+        result1=res['total']
     else:
-        session['spent']='0'
+        result1=0
+
+
+    mesg_warn=" "
+    
 
     cur.execute("SELECT item, COUNT(item) AS popularity FROM record WHERE date >= NOW() + INTERVAL -7 DAY AND date <  NOW() + INTERVAL  0 DAY and username=%s GROUP BY item ORDER BY popularity DESC limit 1", [session['username']])
     resitem=cur.fetchone()
@@ -461,7 +478,7 @@ def dashboard():
     else:
         session['item']='None'
 
-    session['money_left']= int(session['budget'])-int(session['spent'])
+    session['money_left']=int(session['budget'])-int(result1)
     if session['money_left']<500:
         mesg_warn="Your Budget is getting exhausted. Please spend accordingly"
         #flash("Your Budget is ver low")
@@ -491,7 +508,7 @@ def dashboard():
         
         quant=request.form['quant']
         total=request.form['total']
-
+        oneprice=request.form['price']
         comment=request.form['comment']
 
         
@@ -500,19 +517,25 @@ def dashboard():
         #formatted_date = dt.strftime('%Y-%m-%d')
 
         cur=mysql.connection.cursor()
-        cur.execute("INSERT INTO record (date, username, item, quantity, price, place, comment) VALUES(%s, %s, %s, %s, %s, %s, %s)", (date, session['username'], name, quant, total, place, comment))
+        cur.execute("INSERT INTO record (date, username, item, quantity, oneprice, price, place, comment) VALUES(%s, %s, %s, %s, %s, %s, %s, %s)", (date, session['username'], name, quant, oneprice, total, place, comment))
         mysql.connection.commit()
 
         cur=mysql.connection.cursor()
         cur.execute("select price from record where username=%s ORDER BY id DESC LIMIT 1", [session['username']])
         res=cur.fetchone()
-        res1=res['price']
-        res12=int(res1)
+        if res is not None:
+            res1=res['price']
+            res12=int(res1)
+        else:
+            res12=0
         #res1=int(res)
         cur.execute("select spent from record where username=%s", [session['username']])
         res2=cur.fetchone()
-        res3=res2['spent']
-        res32=int(res3)
+        if res2 is not None:
+            res3=res2['spent']
+            res32=int(res3)
+        else:
+            res32=0
         #res3=int(res2)
         resfinal=(res12+res32)
 
@@ -522,7 +545,7 @@ def dashboard():
             restoday1=restoday['daily']
             restoday12=int(restoday1)
         else:
-            restoday12='0'
+            restoday12=0
 
         todayfinal=(restoday12+res12)
         
@@ -540,7 +563,7 @@ def dashboard():
     #return render_template('analysis.html', max=3000, colors=colors, labels=line_labels, values=line_values)
          
 
-    return render_template('dashboard.html', res1=res1, max=3000, colors=colors, labels=line_labels, values=line_values, formdate=formdate, mesg_warn=mesg_warn, datas=datas)
+    return render_template('dashboard.html', res1=res1, max=3000, colors=colors, labels=line_labels, values=line_values, formdate=formdate, mesg_warn=mesg_warn, datas=datas, result1=result1)
 
 
 ##Record Detail
@@ -552,13 +575,19 @@ class inputform(Form):
 @app.route("/record", methods=['GET', 'POST'])
 @login_required
 def record():
+    
     #flash("Record Has Been Deleted Successfully")
     date_select=inputform(request.form)
     cur = mysql.connection.cursor()
+    cur.execute("SELECT sum(price) AS totalsum FROM record WHERE date = CURDATE() and username=%s", [session['username']])
+    res=cur.fetchone()
+    result=res['totalsum']
+
+
     resultValue = cur.execute("SELECT * FROM record WHERE date = CURDATE() and username=%s", [session['username']])
     if resultValue > -1:
         datas = cur.fetchall()
-    return render_template('records.html', datas=datas, date_select=date_select)
+    return render_template('records.html', datas=datas, date_select=date_select, result=result)
 
 @app.route("/week_record", methods=['GET', 'POST'])
 @login_required
@@ -566,32 +595,50 @@ def week_record():
     #flash("Record Has Been Deleted Successfully")
     date_select=inputform(request.form)
     cur = mysql.connection.cursor()
+    cur.execute("SELECT sum(price) AS totalsum FROM record WHERE date >= NOW() + INTERVAL -7 DAY AND date <  NOW() + INTERVAL  0 DAY and username=%s", [session['username']])
+    res=cur.fetchone()
+    result=res['totalsum']
+
+
     resultValue = cur.execute("SELECT * FROM record WHERE date >= NOW() + INTERVAL -7 DAY AND date <  NOW() + INTERVAL  0 DAY and username=%s", [session['username']])
     if resultValue > -1:
         datas = cur.fetchall()
-    return render_template('week_records.html', datas=datas, date_select=date_select)
+    return render_template('week_records.html', datas=datas, date_select=date_select, result=result)
+
+
 @app.route("/month_record", methods=['GET', 'POST'])
 @login_required
 def month_record():
     #flash("Record Has Been Deleted Successfully")
     date_select=inputform(request.form)
     cur = mysql.connection.cursor()
+    cur.execute("SELECT sum(price) AS totalsum FROM record WHERE date >= NOW() + INTERVAL -30 DAY AND date <  NOW() + INTERVAL  0 DAY and username=%s", [session['username']])
+    res=cur.fetchone()
+    result=res['totalsum']
+
     resultValue = cur.execute("SELECT * FROM record WHERE date >= NOW() + INTERVAL -30 DAY AND date <  NOW() + INTERVAL  0 DAY and username=%s", [session['username']])
     if resultValue > -1:
         datas = cur.fetchall()
-    return render_template('month_records.html', datas=datas, date_select=date_select)
+    return render_template('month_records.html', datas=datas, date_select=date_select, result=result)
+
+
 @app.route("/all_record", methods=['GET', 'POST'])
 @login_required
 def all_record():
+    
+    
+
+
+    
     cur = mysql.connection.cursor()
-    result=cur.execute("SELECT SUM(price) FROM new")
-    #result = sum(int(x) for x in cur.fetchall():
-    x=cur.fetchall()
+    cur.execute("SELECT sum(price) AS totalsum FROM record WHERE username=%s", [session['username']])
+    res=cur.fetchone()
+    result=res['totalsum']
     
+    #result=row['price']
+    #result= res.values()
 
-
-    
-
+    #result=sum(result)
     
     
     #result=result[0]
@@ -604,6 +651,7 @@ def all_record():
     return render_template('all_records.html', datas=datas, date_select=date_select, result=result)
 
 @app.route('/delete/<string:id>', methods = ['GET'])
+@login_required
 def delete(id):
     
     cur = mysql.connection.cursor()
@@ -715,8 +763,11 @@ def profile():
                 mysql.connection.commit()
                 cur.execute("SELECT budget FROM users where username= %s",[session['username']])
                 res=cur.fetchone()
-                budget=res['budget']
-                session['budget']= budget
+                if res is not None:
+                    budget=res['budget']
+                    session['budget']= budget
+                else:
+                    session['budget']=0
             return redirect(url_for('profile'))
 
             #return redirect(url_for('uploaded_file',
@@ -851,7 +902,115 @@ def line():
     line_values=values
     return render_template('analysis.html', max=3000, set=zip(values, labels, colors))
      
+@app.route("/admin", methods=['GET', 'POST'])
+@admin_login
+def admin():
+    return render_template('admin.html')
 
+@app.route("/feedback", methods=['GET', 'POST'])
+@login_required
+def feedback():
+    
+    if request.method=='POST':
+        
+        message=request.form['message']
+        name=request.form['fname']
+        cur= mysql.connection.cursor()
+        cur.execute("INSERT INTO feedback(username, message, name) VALUES(%s, %s, %s)", (session['username'], message, name))
+        mysql.connection.commit()
+        flash('Feedback Sent. Will get back to you soon!', 'success')
+        
+        cur.close()
+        
+
+        email=session['email']
+
+        msg=Message('Help Desk @DEMS', sender='dbezbaruah412@gmail.com', recipients=[email])
+        #link=url_for('confirm_email', token=token, _external=True)
+        msg.body="Hi, Thank you for contacting us. We will get back to you within 2 working days.          This is an automaticially generated email. Please don't reply."
+        mail.send(msg)
+        return redirect(url_for('feedback'))
+    
+            
+           
+        
+    return render_template('feedback.html')
+
+@app.route("/fb_details", methods=['GET', 'POST'])
+@admin_login
+def fb_details():
+    
+    cur = mysql.connection.cursor()
+    resultValue = cur.execute("SELECT * FROM feedback")
+    if resultValue > -1:
+        datas = cur.fetchall()
+        
+        
+        
+    
+    return render_template('fb_details.html', datas=datas)
+
+
+class ReplyForm(Form):
+    username=StringField('Username', [validators.Length(min=1, max=50)])
+    message=TextAreaField('Text', [validators.DataRequired()], render_kw={"rows": 10, "cols": 11})
+
+
+@app.route('/reply/<string:id>', methods = ['GET', 'POST'])
+@admin_login
+def reply(id):
+    
+    cur = mysql.connection.cursor()
+    res=cur.execute("SELECT * FROM feedback where id=%s", [id])
+    res=cur.fetchone()
+    formreply=ReplyForm(request.form)
+    formreply.username.data=res['username']
+    
+
+    if request.method=='POST' and formreply.validate():
+        username=formreply.username.data
+        message=formreply.message.data
+        cur= mysql.connection.cursor()
+        cur.execute("INSERT INTO reply(username, reply)VALUES(%s, %s)", (username, message))
+        mysql.connection.commit()
+        cur.close()
+
+        cur1= mysql.connection.cursor()
+        cur1.execute('select email from users where username=%s', [res['username']])
+        res1=cur1.fetchone()
+        email=res1['email']
+
+        msg=Message('Help Desk @DEMS', sender='dbezbaruah412@gmail.com', recipients=[email])
+        #link=url_for('confirm_email', token=token, _external=True)
+        msg.body=message
+        mail.send(msg)
+        flash('Reply sent!', 'success')
+    return render_template('reply_feed.html', formreply=formreply)
+    
+
+
+
+@app.route('/messages', methods=['GET', 'POST'])
+@login_required
+def messages():
+        
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT message FROM feedback Where username = %s", [session['username']])
+        
+        data = cur.fetchall()
+        if data is not None:
+            for row in data:
+                data=row['message']
+
+        cur.execute("SELECT reply FROM reply Where username = %s", [session['username']])
+        datas = cur.fetchall()
+        
+        for mesg in datas:
+            if datas is not None:
+                datas=mesg['reply']
+            else:
+                datas="No Message"
+        return render_template('messages.html', data=data , datas=datas)
 
 
 
@@ -899,23 +1058,21 @@ def upload_file():
     return render_template('upload.html')
 
 
-@app.route('/feedback', methods=['GET', 'POST'])
-def feedback():
-    return render_template('feedback.html')
+
 
 
 @app.route('/user_details')
+@admin_login
 def user_details():
     cur=mysql.connection.cursor()
     cur.execute("select * from users")
-    data = cur.fetchall()
-    ("select name from users where email=%s", [session['email']])
-    name=cur.fetchone()
+    datas = cur.fetchall()
+    
     #nn=name["nn"]
     #for column in data:
          #name=("select name from users")
 
-    return render_template('user_details.html', data=data, name=name)
+    return render_template('user_details.html', datas=datas)
 
 
 

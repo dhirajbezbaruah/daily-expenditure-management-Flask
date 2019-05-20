@@ -23,20 +23,17 @@ body{
 
 
 <form id='form-wrapper' method="POST" action=''>
-    <h1 class='text-center'>Login </h1>
+    <h1 class='text-center'>Response to feedback </h1>
     
     <div class='form-group'>
-        {{render_field(formlogin.usernamelogin, class_='form-control')}}
+        {{render_field(formreply.username, class_='form-control')}}
     </div>
     <div class='form-group'>
-        {{render_field(formlogin.passwordlogin, class_='form-control')}}
+        {{render_field(formreply.message, class_='form-control')}}
     </div>
     
-    <p><input type='submit' class='btn btn-primary' value='Login'>
-    <span id="passwordHelpBlock" classs="help-block"><a href="{{url_for('.forget_password')}}">Forgot password?</a></span>
-    </p>
-
-    <span id="passwordHelpBlock" classs="help-block"><a href="{{url_for('.register')}}">Don't have an account? Create one here</a></span>
+    <p><input type='submit' class='btn btn-primary' value='Send'>
+    
 </form>
 
 {%endblock%}

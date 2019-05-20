@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+{% block body%}
+
+<table class="table table-striped">
+    <th>
+      <td>username</td>
+      <td>Name</td>
+      <td>Email</td>
+      <td>Message</td>
+    </th>
+
+
+    {% for row in datas %}
+    <tr>
+      <td>{{row['0']}}</td>
+      <td>{{row['username']}}</td>
+      <td>{{row['name']}}</td>
+        <td>{{row['email']}}</td>
+        <td>{{row['message']}}</td>
+        <td><a href="reply/{{row['id']}}" button type="button" class="btn btn-danger btn-xs">Reply</a>
+
+
+        </td>
+        
+        
+    </tr>
+    {% endfor %}
+  </table>
+    {% endblock %}

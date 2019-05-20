@@ -1,16 +1,35 @@
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        
-    </tr>
-    </thead>
-    <tbody>
-        
-            <tr>
-                <td>{{name}}</td>
-                
-            </tr>
-        
-    </tbody>
-</table>
+{%extends 'layout.html'%}
+
+{%block body%}
+
+<h4>Users info</h4>
+
+<table class="table table-sm table-dark">
+
+
+        <th>
+          
+          <td>Username</td>
+          <td>Email</td>
+          <td>Name</td>
+          <td>Act. status</td>
+          
+        </th>
+    
+    
+        {% for row in datas %}
+        <tr>
+            <td>{{row[0]}}</td>
+            
+            <td>{{row['username']}}</td>
+            <td>{{row['email']}}</td>
+            <td>{{row['name']}}</td>
+            <td>{{row['confirm_email']}}</td>
+            
+            
+            
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+{%endblock%}

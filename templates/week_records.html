@@ -7,6 +7,7 @@
       var sTable = document.getElementById('customer').innerHTML;
 
       var style = "<style>";
+      style = style + ".myButtonClass {display: none !important;}";
       style = style + "table {width: 100%;font: 17px Calibri;}";
       style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
       style = style + "padding: 2px 3px;text-align: center;}";
@@ -16,7 +17,7 @@
       var win = window.open('', '', 'height=700,width=700');
 
       win.document.write('<html><head>');
-      win.document.write('<title>Profile</title>');   // <title> FOR PDF HEADER.
+      win.document.write('<title>localhost:5000</title>');   // <title> FOR PDF HEADER.
       win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
       win.document.write('</head>');
       win.document.write('<body>');
@@ -63,8 +64,9 @@
       <td>Date</td>
       <td>Place</td>
       <td>Item</td>
-      <td>Quantity</td>
       <td>Price</td>
+      <td>Quantity</td>
+      <td>Total price</td>
       <td>Comment</td>
     </th>
 
@@ -75,14 +77,28 @@
         <td>{{row['date']}}</td>
         <td>{{row['place']}}</td>
         <td>{{row['item']}}</td>
+        <td>{{row['oneprice']}}</td>
         <td>{{row['quantity']}}</td>
         <td>{{row['price']}}</td>
         <td>{{row['comment']}}</td>
+        <td>
+          <a class='myButtonClass' href="/delete/{{ row['id'] }}"  onclick="return confirm('Are You Sure For Delete?')">Delete</a>
+        </td>
         
         
     </tr>
     {% endfor %}
   </table>
+  <h5 style='text-align: right'>Total spent= {{result}} Rs.</h5>
+  <div>
+    &ensp;  
+  </div>
+  <div>
+    &ensp;  
+  </div>
+  <div>
+    &ensp;  
+  </div>
   <div id="customer">
 
   <script language="javascript">

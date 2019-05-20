@@ -144,9 +144,9 @@ function validateForm() {
 
 <h4>{{mesg_warn}}</h4>
 {{session['today']}}
-<h5 id='budget'>Your Monthly Budget is {{session['budget']}} Rs. Total Spent {{session['spent']}} Rs. and  {{session['money_left']}} Rs. left in your pocket </h5>
+<h5 id='budget'></h5>
 <hr/>
-<h5 id="fav">You bought "{{session['item']}}" most frequently during last 7 days and your all time favourite item is "{{session['allitem']}}"</h5>
+<marquee behavior=scroll direction="left" scrollamount="3.7" style="border:black 3px SOLID"><h5 id="fav"><b>Your Monthly Budget is {{session['budget']}} Rs. Total Spent till now {{result1}} Rs.  ||  You bought "{{session['item']}}" most frequently during last 7 days and your all time favourite item is "{{session['allitem']}}"</b></h5></marquee>
 <hr/>
 
 
@@ -232,7 +232,7 @@ function validateForm() {
 
 
 
-<h3>Last 7 day's Expense History</h3>
+<h3>Last 10 day's expense history graph</h3>
 <div>
   &ensp;
   
@@ -310,7 +310,7 @@ function validateForm() {
     
 </div>
 
-<caption><h3>Today's Expense(s) | Total= {{res1}}</h3></caption>
+<caption><h3>Today's expense(s) | Total= {{res1}}</h3></caption>
 <div>
         &ensp;
 </div>
@@ -344,5 +344,5 @@ function validateForm() {
   </p>
 
 </div>
-
+{%include 'includes/_footer.html'%}
 {%endblock%}

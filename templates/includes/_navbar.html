@@ -1,11 +1,11 @@
 
 <!-- Navigation -->
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
   <div class="container">
-    <a class="navbar-brand" href="#">
-      D.E.M.S 
-          <img src="" alt="">
-        </a>
+   
+        <a class="navbar-brand" href="/index">D E M S</a><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAADmwAAA5sBPN8HMQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAR4SURBVGiB7ZlbiFVVGMf/a5zGUZvKK5FRFuGQNZapFEMXQ4wiIrUXsYeMQh98iqLwoaCgyGQqiIIuUtBAIDKh4yWiJgnUUirSpswJw+mCzWRzUXyZGX89fGtm9mzOWXufc/a4C+YPh3POWt/3re+/9rr819rSBCYwLnBZBwRmS1op6T5J8yXNkYSkbknHJe2RtMM5151125kAmAxsAvpJRh/wDDA577zHAJgHfJ+CQBzfAVfnnb8kCZgLdJZBYhgngSvyJjEV+CaUZcQ2hMPAlDyJPJuQ4KmIbVeC7aa8SMyk+MQeAB4DqiL2k4DnAkR6gRl5EHk8kNR73mYR8CbwKjDPl+0O+D2aB5EdgYRWeptDkbI2X7Yu4NdSbj7VFXC5PlBX67+PSlrqf98No5O/jJjjA8Ib317Aebt64GmgDTgf8AHoy4PI2YSkPgHuBKojPg3A0YBPfx5EjicQGcY5oBV4yPs1BmyP5UEkNNnnYMtzofLagF/Zk70q2aQoWgN1S5xzpyU1R8r2S+qRVF9mzPEB4Q3xK+Bib1cPXAdU+U9LEZ98NkSfZEii/ARsjNiuA/YH7PORKD65RNHI6DIcQr6i0Sf4/5fxw8DmS1sZJD4HZuad/xhgR90ngb9TEOgGngBqsmq/5MsHbKeu8397nXPE6uskPSBptaQGSVf5qk5JRyS1SGp1zp2N+dVIqomXZwagBrgfeNuP56FIz/YBX2BaalYZsR2wBjvvD/iYfwIvktVSDFwDvAScSjnee4GHS4i/EDhQIM4A8DwwBXgEOAj8A/yK3dIkK3bfQyuww89QgUbSYHNCG9OALYw+gSh+ABZjI+BYkfjrQ8FrsaNpSJmWgib8/hFr50FseMYxCGzGtNjWIjGHgNeAWdiTaQdOA7uA2cLG918ZEYjiELABmO5J3AJ8iMmXDkwVA/yMKeLlFCYJ9nQagdu9bxwfieTDTqUYAo4Ab2Hn/BXAfKAauBGYDrxRJI9B4BVv00Tx4f6LsLNCHjgHNAMzgO0F6tuBW4HbKD5fhrFTwLJM0ysdzcCCyP8BbPm9FHgZeyoh9AMLhidhkvAbT3Rg4hNsCC4GlmArWBK6gGXS6MGqKXFtHj8clrRQ0guSGiWtknRQ0g0Jfjsl3eSc2zdSAlxEZQp2F3A5sBqblLuBH4EzAZ8e4H1sCNVgl3lpbvS7gbVxVi5C5ilJWyro2R5JX0r6WlK7pN8l9Sb4TJLpsTWyJ5G0a2+XtNE51xWviBKpkwm7y9JmfgHxm6QNzrm9xQxGLh+cc2ckvXshsioBSHpHUkOIhBST8cBcSSckZXZOqAAnJa13zn2axnjMdZBz7g9JHxewQzb+90kaqjDBNPhA0s1pSRQEsDS2SnQAd0Xqr8TOJoXUa6XoBO7NoCNGkv0M0zWvA1OL2NQD28hGq53HOueSzEj4JKcB16a0XUT45U0STgDLMyVQCbCb9m0lEBjEtFRtcvQcANzD2DdVhfAtcEfeuaYCJr+3YovFACbw9gBribwkncAE/uP4F4YVNg8YDCfGAAAAAElFTkSuQmCC"><a href="https://icons8.com/icon/82688/get-cash-filled"></a>
+          
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -13,21 +13,27 @@
       <ul class="navbar-nav ml-auto">
         
         {%if session.logged_in%}
-        <li class="nav-item active">
-            <a class="nav-link" href="/index">Home
-                  
-                </a>
-          </li>
+        
         <li class="nav-item">
             <a class="nav-link" href="/dashboard">Dashboard</a>
           </li>
         <li class="nav-item">
-            <a class="nav-link" href="/profile">Profile</a>
-          </li>
-        <li class="nav-item">
-            <a class="nav-link" href="/logout">Logout</a>
+            <a class="nav-link" href="/profile">My Account</a>
           </li>
           
+          
+          <li class="nav-item">
+              <a class="nav-link" href="/feedback"><span class="glyphicon glyphicon-send"></span> Feedback</a>
+        <li class="nav-item">
+
+            <a class="nav-link" href="/logout">Logout</a>
+          </li>
+          {%elif session.adminlogin%}
+
+          <li class="nav-item">
+
+              <a class="nav-link" href="/logout">Logout</a>
+            </li>
         
           {%else%}
           <li class="nav-item active">
@@ -41,9 +47,11 @@
         <li class="nav-item">
           <a class="nav-link" href="/login">Login</a>
         </li>
-        
+      
         
         {%endif%}
+
+        
       </ul>
     </div>
   </div>

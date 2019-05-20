@@ -1,0 +1,88 @@
+{% extends 'layout.html' %}
+{% block body%}
+<style>
+    body{
+        background-image:  url("/static/newee.jpg");
+      }
+      .contact{
+        padding: 4%;
+        height: 400px;
+      }
+      .col-md-3{
+        background: #ff0077;
+        padding: 4%;
+        border-top-left-radius: 0.5rem;
+        border-bottom-left-radius: 0.5rem;
+      }
+      .contact-info{
+        margin-top:10%;
+      }
+      .contact-info img{
+        margin-bottom: 15%;
+      }
+      .contact-info h2{
+        margin-bottom: 10%;
+      }
+      .col-md-9{
+        background: rgb(255, 255, 255);
+        padding: 3%;
+        border-top-right-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+      }
+      .contact-form label{
+        font-weight:600;
+      }
+      
+      .contact-form button:focus{
+        box-shadow:none;
+      }
+      
+      
+    </style>
+    
+    <form role="form" action='' method="post">
+    <div class="container contact">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="contact-info">
+              <img src="https://img.icons8.com/dusk/96/000000/admin-settings-male.png">
+              <a href="https://icons8.com/icon/104252/admin-settings-male"></a>
+            <h2>Admin Panel</h2>
+            
+          </div>
+            </div>
+            <div class="col-md-9">
+                <div class="contact-form">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="card" style="width:300px">
+                                <img class="card-img-top" src="https://img.icons8.com/color/480/000000/communication.png">
+                                <a href="https://icons8.com/icon/103407/communication"></a>
+                                <div class="card-img-overlay">
+                                  <h4 class="card-title">User Feedback</h4>
+                                  <p></p>
+                                  <a href="/fb_details" class="btn btn-primary"><span class="spinner-grow spinner-grow-sm"></span>
+                                    Check Here</a>
+                                </div>
+                              </div>
+                          </div>
+                          <div class="col-sm-3"></div>
+                          <div class="col-sm-4">
+                              <div class="card" style="width:300px">
+                                  <img class="card-img-top" src="https://img.icons8.com/color/480/000000/edit-user-female.png">
+                                  <a href="https://icons8.com/icon/23290/edit-profile"></a>
+                                  <div class="card-img-overlay">
+                                    <h4 class="card-title">User Details</h4>
+                                   <p></p>
+                                    <a href="/user_details" class="btn btn-primary"><span class="spinner-grow spinner-grow-sm"></span>
+                                      Check Here</a>
+                                  </div>
+                                </div>
+                              </div>
+                        </div>
+                  
+          </div>
+        </div>
+    </form>
+    
+{% endblock %}
